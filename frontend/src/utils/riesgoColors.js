@@ -49,6 +49,30 @@ export const TIPOS_RIESGO = {
     color: '#10b981',
     description: 'Vientos fuertes, granizo y tormentas eléctricas',
   },
+  triangulado: {
+    label: 'Índice Triangulado',
+    icon: 'Triangle',
+    field: 'idx_triangulado',
+    nivel: 'nivel_triangulado',
+    color: '#e879f9',
+    description: 'Amenaza física (UNGRD) + Vulnerabilidad socioeconómica (IPM DANE) + Estrés térmico (IDEAM)',
+  },
+  ipm: {
+    label: 'Pobreza Multidim.',
+    icon: 'Users',
+    field: 'idx_ipm',
+    nivel: 'nivel_ipm',
+    color: '#f59e0b',
+    description: 'Índice de Pobreza Multidimensional Censal 2018 (DANE)',
+  },
+  temperatura: {
+    label: 'Estrés Térmico',
+    icon: 'Thermometer',
+    field: 'idx_temperatura',
+    nivel: 'nivel_temperatura',
+    color: '#ef4444',
+    description: 'Temperatura media anual — Normales Climatológicas IDEAM',
+  },
 }
 
 export const NIVEL_COLORS = {

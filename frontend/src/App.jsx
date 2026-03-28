@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import Sidebar from './components/Sidebar'
 import MapaD3 from './components/MapaD3'
 import FichaMunicipio from './components/FichaMunicipio'
+import DocumentacionModal from './components/DocumentacionModal'
 import { useMapData } from './hooks/useMapData'
 
 const INITIAL_FILTROS = {
@@ -17,6 +18,7 @@ export default function App() {
   const [departamentoFiltro, setDepartamentoFiltro] = useState('')
   const [municipioSeleccionado, setMunicipioSeleccionado] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [docOpen, setDocOpen] = useState(false)
 
   // ── Datos del backend ─────────────────────────────────────
   const { geojson, stats, departamentos, loading, error, refetch } = useMapData()
@@ -64,7 +66,7 @@ export default function App() {
             <div className="map-loading-spinner" />
             <p className="map-loading-text">Cargando datos de riesgos climáticos...</p>
             <p style={{ fontSize: 11, color: 'var(--text-disabled)' }}>
-              Conectando con servidor Flask en localhost:5050
+              Preparando datos de municipios...
             </p>
           </div>
         </div>
@@ -189,6 +191,32 @@ export default function App() {
             Haz clic en un municipio para ver su ficha de riesgos
           </div>
         )}
+
+        {/* Botón documentación */}
+        <button
+          onClick={() => setDocOpen(true)}
+          title="Acerca del índice y metodología"
+          style={{
+            position: 'absolute', bottom: 16, left: 16,
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: '6px 12px',
+            display: 'flex', alignItems: 'center', gap: 6,
+            cursor: 'pointer',
+            fontSize: 11, fontWeight: 600,
+            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-sans)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            zIndex: 10,
+            transition: 'border-color 0.15s, color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#e879f9'; e.currentTarget.style.color = '#e879f9' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+        >
+          <span style={{ fontSize: 13 }}>🔺</span>
+          Metodología e Índices
+        </button>
       </main>
 
       {/* Panel derecho - Ficha municipio */}
@@ -198,6 +226,9 @@ export default function App() {
         riesgoActivo={riesgoActivo}
         geojson={geojson}
       />
+
+      {/* Modal de documentación */}
+      <DocumentacionModal open={docOpen} onClose={() => setDocOpen(false)} />
     </div>
   )
 }

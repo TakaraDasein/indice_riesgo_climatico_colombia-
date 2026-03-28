@@ -1,0 +1,357 @@
+municipio,departamento,temp_media_anual
+Valledupar,Cesar,29.12
+Majagual,Sucre,29.1
+Puerto Wilches,Santander,28.9
+Uribia,La Guajira,28.9
+San Sebastián de Buenavista,Magdalena,28.88
+Flandes,Tolima,28.85
+Ambalema,Tolima,28.8
+Albania,La Guajira,28.75
+Manaure,La Guajira,28.7
+Pinillos,Bolívar,28.7
+Puerto Salgar,Cundinamarca,28.7
+Ciénaga,Magdalena,28.67
+La Gloria,Cesar,28.65
+El Banco,Magdalena,28.65
+Magangué,Bolívar,28.6
+Puerto Carreño,Vichada,28.57
+Soledad,Atlántico,28.57
+Puerto Berrío,Antioquia,28.57
+Zambrano,Bolívar,28.5
+Aguachica,Cesar,28.5
+Villavieja,Huila,28.45
+Agustín Codazzi,Cesar,28.45
+Tibú,Norte de Santander,28.4
+Repelón,Atlántico,28.4
+Chiriguaná,Cesar,28.4
+San Pablo (Bolívar),Bolívar,28.4
+Coyaima,Tolima,28.35
+Jerusalén,Cundinamarca,28.35
+Armero (Guayabal),Tolima,28.35
+Riohacha,La Guajira,28.33
+Puerto Parra,Santander,28.33
+Ayapel,Cordoba,28.3
+Soledad,Atlantico,28.3
+San Benito Abad,Sucre,28.3
+Honda,Tolima,28.3
+San Pablo,Bolívar,28.25
+Ayapel,Córdoba,28.2
+Cereté,Córdoba,28.2
+Natagaima,Tolima,28.17
+Pivijai,Magdalena,28.17
+Ríoviejo,Bolívar,28.15
+El Guamo,Bolívar,28.13
+Saldaña,Tolima,28.1
+Juan de Acosta,Atlántico,28.05
+Prado,Tolima,28.05
+Guamo,Tolima,28.05
+Manatí,Atlántico,27.98
+Ciénaga de Oro,Córdoba,27.95
+Maicao,La Guajira,27.95
+Becerrill,Cesar,27.93
+Planeta Rica,Córdoba,27.88
+Caucasia,Antioquia,27.87
+Espinal,Tolima,27.82
+Lérida,Tolima,27.8
+Sabana de Torres,Santander,27.8
+Puerto Boyacá,Boyacá,27.8
+Pailitas,Cesar,27.8
+Cartagena de Indias,Bolívar,27.78
+Urumita,La Guajira,27.75
+Isla de Providencia,"Archipiélago de San Andres, Providencia y Santa Catalina",27.7
+Puerto Escondido,Córdoba,27.7
+Chima,Córdoba,27.65
+Corozal,Sucre,27.65
+Zona Bananera,Magdalena,27.63
+Barrancabermeja,Santander,27.62
+Montería,Córdoba,27.62
+Arboletes,Antioquia,27.6
+María La Baja,Bolívar,27.6
+Isla de San Andrés,"Archipiélago de San Andres, Providencia y Santa Catalina",27.6
+Lorica,Córdoba,27.58
+El Carmén de Bolívar,Bolívar,27.5
+Aguazul,Casanare,27.5
+Cúcuta,Norte de Santander,27.42
+Tierralta,Córdoba,27.4
+Cimitarra,Santander,27.35
+Sahagún,Córdoba,27.35
+Montelíbano,Córdoba,27.35
+San Bernardo del Viento,Córdoba,27.3
+Necoclí,Antioquia,27.2
+Paz de Ariporo,Casanare,27.2
+Santa Catalina,Bolívar,27.13
+Purificación,Tolima,27.12
+Carepa,Antioquia,27.1
+Baraya,Huila,27.07
+Sampués,Sucre,27.0
+Barranca de Upía,Meta,27.0
+Puerto López,Meta,27.0
+Arauca,Arauca,27.0
+Trinidad,Casanare,26.95
+Colosó,Sucre,26.95
+Orocué,Casanare,26.9
+Yopal,Casanare,26.85
+Dibulla,La Guajira,26.8
+Apartadó,Antioquia,26.7
+Quibdó,Chocó,26.62
+Inírida,Guainía,26.6
+Lloró,Chocó,26.6
+Sardinata,Norte de Santander,26.53
+Tame,Arauca,26.5
+San Diego,Cesar,26.45
+Rio Quito (Paimadó),Chocó,26.4
+Palermo,Huila,26.4
+Patía (El Bordo),Cauca,26.4
+Campoalegre,Huila,26.33
+Valle De San Juan,Tolima,26.3
+Puerto Lleras,Meta,26.25
+Sonsón,Antioquia,26.2
+Cumaribo,Vichada,26.18
+Puerto Gaitán,Meta,26.1
+Valle de San Juan,Tolima,26.1
+Medio San Juan,Chocó,26.1
+Ataco,Tolima,26.1
+Vistahermosa,Meta,26.05
+Fredonia,Antioquia,26.05
+Buenaventura,Valle del Cauca,26.04
+Palmar,Santander,26.03
+Guapi,Cauca,26.0
+Paratebueno,Cundinamarca,26.0
+Bahía Solano,Chocó,26.0
+Valparaíso,Caquetá,25.97
+Mutatá,Antioquia,25.95
+Puerto Leguízamo,Putumayo,25.9
+Tumaco,Nariño,25.9
+Leticia,Amazonas,25.88
+San José del Guaviare,Guaviare,25.87
+Villanueva,Casanare,25.85
+Toledo,Antioquia,25.8
+San Carlos de Guaroa,Meta,25.8
+Mariquita,Tolima,25.78
+San Vicente del Caguán,Caquetá,25.73
+Capitanejo,Santander,25.73
+Saravena,Arauca,25.7
+Puerto Rico,Caquetá,25.7
+Villavicencio,Meta,25.68
+El Doncello,Caquetá,25.67
+Cumaral,Meta,25.67
+Solano,Caquetá,25.67
+La Macarena,Meta,25.63
+San Martín,Meta,25.6
+Mitú,Vaupés,25.5
+Nuquí,Chocó,25.5
+Florencia,Caquetá,25.45
+Belén de Los Andaquíes,Caquetá,25.33
+Girón,Santander,25.3
+Ibagué,Tolima,25.27
+El Retorno,Guaviare,25.25
+San José del Fragua,Caquetá,25.23
+Anapoima,Cundinamarca,25.17
+Santa Rosa del Sur,Bolívar,25.1
+La Paz,Cesar,25.05
+Mercaderes,Cauca,25.03
+Yolombó,Antioquia,25.0
+Fuente de Oro,Meta,25.0
+Remedios,Antioquia,25.0
+Villagarzón,Putumayo,24.98
+Pinchote,Santander,24.75
+El Carmen,Santander,24.5
+Cali,Valle del Cauca,24.5
+Mesetas,Meta,24.47
+Toledo,Norte de Santander,24.37
+Agrado,Huila,24.33
+La Unión,Valle del Cauca,24.3
+Neiva,Huila,24.28
+Puerto Tejada,Cauca,24.23
+Palmira,Valle del Cauca,24.12
+Chaparral,Tolima,24.05
+Santander de Quilichao,Cauca,23.9
+Pandi,Cundinamarca,23.75
+Florida,Valle del Cauca,23.7
+Chima,Santander,23.7
+Florida,Valle Del Cauca,23.6
+Lejanías,Meta,23.55
+Miranda,Cauca,23.5
+San Roque,Antioquia,23.4
+Bugalagrande,Valle del Cauca,23.3
+Algeciras,Huila,23.27
+Barbacoas,Nariño,23.25
+Rioblanco,Tolima,23.15
+Mocoa,Putumayo,23.1
+Bucaramanga,Santander,23.05
+Palestina,Caldas,22.95
+Amalfi,Antioquia,22.9
+Támara,Casanare,22.8
+Medellín,Antioquia,22.8
+Landázuri,Santander,22.8
+Santa Marta,Magdalena,22.79
+Támesis,Antioquia,22.7
+San Carlos,Antioquia,22.63
+Vegachí,Antioquia,22.63
+Otanche,Boyacá,22.6
+Suaza,Huila,22.6
+Salazar,Norte de Santander,22.6
+La Plata,Huila,22.55
+Planadas,Tolima,22.4
+Tello,Huila,22.17
+Armenia,Quindío,22.15
+Quípama,Boyacá,22.05
+Don Matías,Antioquia,22.03
+Bello,Antioquia,22.0
+Andes,Antioquia,21.97
+Buenavista,Quindío,21.9
+Convención,Norte de Santander,21.9
+Yalí,Antioquia,21.9
+Teorama,Norte de Santander,21.8
+San Francisco,Antioquia,21.77
+Valdivia,Antioquia,21.73
+Charalá,Santander,21.7
+Cañasgordas,Antioquia,21.57
+Santo Domingo,Antioquia,21.53
+Guadalupe,Santander,21.5
+Altamira,Huila,21.48
+Lebrija,Santander,21.47
+San Antonio,Tolima,21.45
+Ocaña,Norte de Santander,21.42
+Chinchina,Caldas,21.4
+Pereira,RIsaralda,21.38
+Dolores,Tolima,21.15
+Ábrego,Norte de Santander,21.1
+Campohermoso,Boyacá,21.1
+Yacopí,Cundinamarca,21.02
+Íquira,Huila,21.02
+Nóvita,Chocó,20.93
+Trujillo,Valle del Cauca,20.9
+Buriticá,Antioquia,20.8
+Santa María,Huila,20.8
+Yumbo,Valle del Cauca,20.7
+Calarcá,Quindío,20.6
+Argelia,Valle del Cauca,20.5
+Garzón,Huila,20.43
+Silvania,Cundinamarca,20.4
+Pitalito,Huila,20.4
+Venecia,Antioquia,20.3
+Marquetalia,Caldas,20.1
+Frontino,Antioquia,20.07
+La Playa,Norte de Santander,20.05
+Líbano,Tolima,20.0
+Colombia,Huila,19.95
+Ricaurte,Nariño,19.9
+Gigante,Huila,19.9
+Samaniego,Nariño,19.85
+Consacá,Nariño,19.83
+Samaná,Caldas,19.65
+Popayán,Cauca,19.6
+Tuluá,Valle del Cauca,19.51
+Albania,Santander,19.4
+Gachetá,Cundinamarca,19.33
+Santuario,RIsaralda,19.25
+Piendamó,Cauca,19.25
+Anorí,Antioquia,19.23
+Chachaguí,Nariño,19.2
+Tibacuy,Cundinamarca,19.2
+Pajarito,Boyacá,19.1
+Sevilla,Valle del Cauca,19.03
+Moniquirá,Boyacá,19.0
+Alejandría,Antioquia,18.98
+Zapatoca,Santander,18.9
+Mogotes,Santander,18.9
+Miraflores,Boyacá,18.77
+Concordia,Antioquia,18.67
+Cajibío,Cauca,18.6
+Bolívar,Cauca,18.58
+Pueblo Rico,RIsaralda,18.57
+Suratá,Santander,18.53
+Caldas,Antioquia,18.2
+Peñol,Antioquia,18.18
+Gámbita,Santander,18.15
+San Agustín,Huila,18.02
+La Sierra,Cauca,18.0
+Santa Rosa de Cabal,RIsaralda,18.0
+San Vicente,Antioquia,18.0
+Taminango,Nariño,17.9
+Sutatenza,Boyacá,17.87
+Cajamarca,Tolima,17.82
+Ragonvalia,Norte de Santander,17.76
+Jardín,Antioquia,17.55
+El Cerrito,Valle del Cauca,17.44
+Boavita,Boyacá,17.37
+Anolaima,Cundinamarca,17.25
+Macanal,Boyacá,17.23
+Urrao,Antioquia,17.18
+Anserma,Caldas,17.15
+Rovira,Tolima,17.15
+Villahermosa,Tolima,17.05
+Villa de Leiva,Boyacá,17.05
+Páez (Belalcázar),Cauca,17.0
+Cáchira,Norte de Santander,17.0
+Chiscas,Boyacá,16.93
+Rionegro,Antioquia,16.93
+Ciudad Bolívar,Antioquia,16.83
+Puerres,Nariño,16.75
+Aguadas,Caldas,16.7
+Manizales,Caldas,16.56
+Pacho,Cundinamarca,16.45
+Ramiriquí,Boyacá,16.4
+Vélez,Santander,16.4
+Santa Sofía,Boyacá,16.15
+San Cayetano,Cundinamarca,16.1
+Guadalupe,Huila,16.0
+Rondón,Boyacá,16.0
+Colón,Putumayo,15.85
+Buenavista,Boyacá,15.85
+Inzá,Cauca,15.77
+Nobsa,Boyacá,15.7
+Funes,Nariño,15.7
+San Bernardo,Nariño,15.7
+Pasca,Cundinamarca,15.68
+Guayabal de Síquima,Cundinamarca,15.5
+Sibundoy,Putumayo,15.5
+Sativanorte,Boyacá,15.33
+Pamplona,Norte de Santander,15.1
+La Unión,Antioquia,14.97
+Fúquene,Cundinamarca,14.52
+Saboyá,Boyacá,14.5
+Nuevo Colón,Boyacá,14.37
+Sogamoso,Boyacá,14.23
+Sotará (Paispamba),Cauca,14.1
+Samacá,Boyacá,14.05
+Sopó,Cundinamarca,14.0
+San Miguel de Sema,Boyacá,14.0
+El Tambo,Cauca,13.9
+Bogotá,Cundinamarca,13.81
+Cerinza,Boyacá,13.8
+Paipa,Boyacá,13.77
+Tenjo,Cundinamarca,13.67
+La Vega,Cundinamarca,13.63
+Cerrito,Santander,13.62
+Toca,Boyacá,13.6
+Herrán,Norte de Santander,13.6
+Santa Isabel,Tolima,13.6
+Simijaca,Cundinamarca,13.5
+Santa Rosa de Osos,Antioquia,13.4
+Tabio,Cundinamarca,13.4
+Guasca,Cundinamarca,13.3
+Tangua,Nariño,13.2
+Tunja,Boyacá,13.13
+Mosquera,Cundinamarca,13.12
+La Uvita,Boyacá,12.47
+Pasto,Nariño,12.45
+Silos,Norte de Santander,12.2
+Duitama,Boyacá,12.18
+Chocontá,Cundinamarca,12.12
+Soacha,Cundinamarca,11.97
+Pupiales,Nariño,11.9
+Chita,Boyacá,11.8
+Salamina,Caldas,11.65
+Cuítiva,Boyacá,11.5
+Sapuyes,Nariño,11.4
+Ubaque,Cundinamarca,11.3
+Aldana,Nariño,11.1
+Túquerres,Nariño,11.05
+San Sebastián,Cauca,10.8
+Totoró,Cauca,10.45
+Tona,Santander,8.8
+Choachí,Cundinamarca,8.5
+Guicán,Boyacá,6.77
+Socotá,Boyacá,6.23

@@ -1,11 +1,23 @@
 #!/usr/bin/env python3
 """
-Script 1: Descarga y procesa el shapefile de municipios de Colombia (HDX/OCHA)
-y los datos de emergencias de UNGRD via Socrata API.
+Script 1: Descarga y procesa el shapefile de municipios de Colombia (HDX/OCHA),
+los datos de emergencias de UNGRD, el IPM censal 2018 (DANE) y la temperatura
+media anual por municipio (IDEAM - Normales Climatológicas).
 
 Fuentes:
-- Municipios: https://data.humdata.org/dataset/cod-ab-col (HDX/OCHA/DANE)
-- Emergencias: https://www.datos.gov.co/resource/wwkg-r6te.json (UNGRD)
+- Municipios:    https://data.humdata.org/dataset/cod-ab-col (HDX/OCHA/DANE)
+- Emergencias:   https://www.datos.gov.co/resource/wwkg-r6te.json (UNGRD)
+- IPM Censal:    data/raw/ipm_censal_2018.xlsx (DANE - Censo 2018)
+- Temperatura:   data/processed/temperatura_normales.csv (IDEAM - nsz2-kzcq)
+
+Índice Triangulado:
+  El índice compuesto combina tres dimensiones:
+    1. Riesgo de eventos extremos (UNGRD): inundación, deslizamiento, incendio,
+       sequía, eventos extremos → normalizado 0-5
+    2. Vulnerabilidad socioeconómica (IPM, % población en pobreza multidimensional)
+       → normalizado 0-5 (mayor IPM = mayor vulnerabilidad)
+    3. Temperatura media anual (IDEAM) → normalizado 0-5 como proxy de estrés
+       térmico (mayor temperatura = mayor riesgo de ola de calor/sequía)
 """
 
 import os
@@ -281,23 +293,110 @@ def main():
     for cat in ["inundacion", "deslizamiento", "incendio", "sequia", "evento_extremo"]:
         df_riesgo[f"idx_{cat}"] = normalizar_riesgo(df_riesgo[cat])
 
-    df_riesgo["idx_ola_calor"] = 0.0  # Placeholder hasta tener datos IDEAM temperatura
+    # ── Integra IPM Censal 2018 (DANE) ──────────────────────────────────────
+    ipm_path = PROCESSED_DIR / "ipm_municipios.csv"
+    if ipm_path.exists():
+        df_ipm = pd.read_csv(ipm_path, dtype={"cod_municipio": str})
+        df_ipm["cod_municipio"] = df_ipm["cod_municipio"].str.zfill(5)
+        df_ipm["ipm_total"] = pd.to_numeric(df_ipm["ipm_total"], errors="coerce")
+        # Normaliza IPM (0–100%) → escala 0–5
+        # 0% = 0 (sin pobreza), 100% = 5 (máxima pobreza = máxima vulnerabilidad)
+        df_ipm["idx_ipm"] = (df_ipm["ipm_total"] / 100 * 5).round(2)
+        df_riesgo = df_riesgo.merge(
+            df_ipm[["cod_municipio", "ipm_total", "ipm_cabecera", "ipm_rural", "idx_ipm"]],
+            on="cod_municipio",
+            how="left"
+        )
+        n_ipm = df_riesgo["ipm_total"].notna().sum()
+        print(f"  [OK] IPM integrado para {n_ipm} municipios")
+    else:
+        print("  [OMITIDO] ipm_municipios.csv no encontrado. Ejecuta 03_descargar_fuentes.py")
+        df_riesgo["ipm_total"] = None
+        df_riesgo["ipm_cabecera"] = None
+        df_riesgo["ipm_rural"] = None
+        df_riesgo["idx_ipm"] = 0.0
 
-    # Calcula indice compuesto de riesgo (promedio ponderado)
+    # ── Integra Temperatura Media Anual (IDEAM Normales) ─────────────────────
+    temp_path = PROCESSED_DIR / "temperatura_normales.csv"
+    if temp_path.exists():
+        df_temp = pd.read_csv(temp_path)
+        df_temp["temp_media_anual"] = pd.to_numeric(df_temp["temp_media_anual"], errors="coerce")
+        df_temp["mun_norm"] = df_temp["municipio"].str.upper().str.strip()
+        df_temp["dpt_norm"] = df_temp["departamento"].str.upper().str.strip()
+
+        # Normaliza temperatura → índice de estrés térmico 0–5
+        # Usando percentil 95 de la distribución colombiana como referencia máxima
+        t_max = df_temp["temp_media_anual"].quantile(0.95)
+        t_min = df_temp["temp_media_anual"].quantile(0.05)
+        df_temp["idx_temperatura"] = (
+            (df_temp["temp_media_anual"] - t_min) / (t_max - t_min) * 5
+        ).clip(0, 5).round(2)
+
+        # Join con df_riesgo usando nombre de municipio
+        if "municipio" in df_riesgo.columns:
+            df_riesgo["mun_norm"] = df_riesgo["municipio"].str.upper().str.strip()
+        if "departamento" in df_riesgo.columns:
+            df_riesgo["dpt_norm"] = df_riesgo["departamento"].str.upper().str.strip()
+
+        temp_merge = df_temp[["mun_norm", "dpt_norm", "temp_media_anual", "idx_temperatura"]]
+        df_riesgo = df_riesgo.merge(temp_merge, on=["mun_norm", "dpt_norm"], how="left")
+
+        n_temp = df_riesgo["temp_media_anual"].notna().sum()
+        print(f"  [OK] Temperatura integrada para {n_temp} municipios (de 356 con estaciones IDEAM)")
+        print(f"    Sin temperatura (imputado = media nacional): {(~df_riesgo['temp_media_anual'].notna()).sum()}")
+        # Imputa municipios sin datos con la media nacional
+        media_temp = df_temp["temp_media_anual"].mean()
+        media_idx_temp = df_temp["idx_temperatura"].mean()
+        df_riesgo["temp_media_anual"] = df_riesgo["temp_media_anual"].fillna(media_temp).round(2)
+        df_riesgo["idx_temperatura"] = df_riesgo["idx_temperatura"].fillna(media_idx_temp).round(2)
+    else:
+        print("  [OMITIDO] temperatura_normales.csv no encontrado. Ejecuta 03_descargar_fuentes.py")
+        df_riesgo["temp_media_anual"] = None
+        df_riesgo["idx_temperatura"] = 0.0
+
+    # Compatibilidad retroactiva: idx_ola_calor = idx_temperatura
+    df_riesgo["idx_ola_calor"] = df_riesgo.get("idx_temperatura", pd.Series([0.0] * len(df_riesgo)))
+
+    # ── ÍNDICE TRIANGULADO (ponderado) ───────────────────────────────────────
+    # Dimensión 1 — Amenaza física (eventos UNGRD): 55% del total
+    #   inundación 0.20, deslizamiento 0.20, incendio 0.10, extremo 0.05 = 0.55
+    # Dimensión 2 — Vulnerabilidad socioeconómica (IPM): 30%
+    # Dimensión 3 — Estrés térmico (temperatura IDEAM): 15%
     pesos = {
-        "idx_inundacion": 0.25,
-        "idx_deslizamiento": 0.25,
-        "idx_incendio": 0.20,
-        "idx_evento_extremo": 0.15,
-        "idx_sequia": 0.10,
-        "idx_ola_calor": 0.05,
+        "idx_inundacion":    0.20,
+        "idx_deslizamiento": 0.20,
+        "idx_incendio":      0.10,
+        "idx_evento_extremo":0.05,
+        "idx_sequia":        0.00,  # incluido en idx_riesgo_compuesto legado
+        "idx_ipm":           0.30,
+        "idx_ola_calor":     0.15,
     }
-    df_riesgo["idx_riesgo_compuesto"] = sum(
+    # Asegura que todas las columnas de pesos existan
+    for col in pesos:
+        if col not in df_riesgo.columns:
+            df_riesgo[col] = 0.0
+        df_riesgo[col] = pd.to_numeric(df_riesgo[col], errors="coerce").fillna(0)
+
+    df_riesgo["idx_triangulado"] = sum(
         df_riesgo[col] * peso for col, peso in pesos.items()
     ).round(2)
 
+    # Índice compuesto legado (solo UNGRD, para retrocompatibilidad)
+    pesos_legacy = {
+        "idx_inundacion":    0.25,
+        "idx_deslizamiento": 0.25,
+        "idx_incendio":      0.20,
+        "idx_evento_extremo":0.15,
+        "idx_sequia":        0.10,
+        "idx_ola_calor":     0.05,
+    }
+    df_riesgo["idx_riesgo_compuesto"] = sum(
+        df_riesgo[col] * peso for col, peso in pesos_legacy.items()
+    ).round(2)
+
     # Añade niveles textuales
-    for cat in ["inundacion", "deslizamiento", "incendio", "sequia", "evento_extremo", "ola_calor", "riesgo_compuesto"]:
+    for cat in ["inundacion", "deslizamiento", "incendio", "sequia", "evento_extremo",
+                "ola_calor", "riesgo_compuesto", "triangulado", "ipm", "temperatura"]:
         df_riesgo[f"nivel_{cat}"] = df_riesgo[f"idx_{cat}"].apply(calcular_nivel)
 
     # ──────────────────────────────────────────────
@@ -310,7 +409,12 @@ def main():
     gdf.columns = [c.lower() for c in gdf.columns]
 
     if "cod_mpio" in gdf.columns:
-        gdf["cod_municipio"] = gdf["cod_mpio"].astype(str).str.strip().str.zfill(5)
+        gdf["cod_municipio"] = (
+            gdf["cod_mpio"].astype(str)
+            .str.replace(r"^[A-Za-z]+", "", regex=True)
+            .str.strip()
+            .str.zfill(5)
+        )
     elif "adm2_pcode" in gdf.columns:
         # El pcode de OCHA para Colombia tiene formato 'CO' + 5 digitos, ej: CO05001
         # Removemos el prefijo de pais (cualquier letra al inicio)
@@ -374,6 +478,11 @@ def main():
         "nivel_inundacion", "nivel_deslizamiento", "nivel_incendio",
         "nivel_sequia", "nivel_evento_extremo", "nivel_ola_calor",
         "nivel_riesgo_compuesto",
+        # Nuevos campos: IPM, temperatura, índice triangulado
+        "ipm_total", "ipm_cabecera", "ipm_rural",
+        "temp_media_anual",
+        "idx_ipm", "idx_temperatura", "idx_triangulado",
+        "nivel_ipm", "nivel_temperatura", "nivel_triangulado",
         "geometry"
     ]
     keep_cols = [c for c in keep_cols if c in gdf_merge.columns]

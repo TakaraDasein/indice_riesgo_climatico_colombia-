@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import {
-  Zap, Waves, Mountain, Flame, Sun, Wind,
+  Zap, Waves, Mountain, Flame, Sun, Wind, Triangle, Users, Thermometer,
   ChevronDown, ChevronUp, MapPin, BarChart2,
 } from 'lucide-react'
 import {
@@ -8,7 +8,7 @@ import {
   NIVELES_ORDEN, nivelBadgeStyle,
 } from '../utils/riesgoColors'
 
-const ICON_MAP = { Zap, Waves, Mountain, Flame, Sun, Wind }
+const ICON_MAP = { Zap, Waves, Mountain, Flame, Sun, Wind, Triangle, Users, Thermometer }
 
 const MAP_MODES = [
   { id: 'calor',        emoji: '🌡️', label: 'Calor' },

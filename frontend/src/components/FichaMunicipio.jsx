@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
-  Zap, Waves, Mountain, Flame, Sun, Wind, X,
+  Zap, Waves, Mountain, Flame, Sun, Wind, X, Triangle, Users, Thermometer,
 } from 'lucide-react'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
@@ -11,7 +11,7 @@ import {
   TIPOS_RIESGO, NIVEL_COLORS, NIVEL_BG, NIVEL_TEXT_COLORS,
 } from '../utils/riesgoColors'
 
-const ICON_MAP = { Zap, Waves, Mountain, Flame, Sun, Wind }
+const ICON_MAP = { Zap, Waves, Mountain, Flame, Sun, Wind, Triangle, Users, Thermometer }
 
 // Tooltip personalizado para Recharts
 function CustomTooltip({ active, payload, label }) {
@@ -381,6 +381,69 @@ export default function FichaMunicipio({
               </div>
             )}
 
+            {/* IPM y Temperatura */}
+            {(municipio.ipm_total != null || municipio.temp_media_anual != null) && (
+              <div>
+                <div className="section-title">Contexto Socioeconómico y Climático</div>
+                <div
+                  style={{
+                    background: 'var(--bg-elevated)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: 12,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 10,
+                  }}
+                >
+                  {municipio.ipm_total != null && (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Users size={11} style={{ color: '#f59e0b' }} />
+                          IPM Total (Censo 2018)
+                        </span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b' }}>
+                          {Number(municipio.ipm_total).toFixed(1)}%
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, fontSize: 10, color: 'var(--text-muted)' }}>
+                        {municipio.ipm_cabecera != null && (
+                          <span>Cabecera: <strong style={{ color: 'var(--text-secondary)' }}>{Number(municipio.ipm_cabecera).toFixed(1)}%</strong></span>
+                        )}
+                        {municipio.ipm_rural != null && (
+                          <span>Rural: <strong style={{ color: 'var(--text-secondary)' }}>{Number(municipio.ipm_rural).toFixed(1)}%</strong></span>
+                        )}
+                      </div>
+                      <div style={{ marginTop: 4, background: 'var(--bg-surface)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
+                        <div style={{ width: `${Math.min(100, Number(municipio.ipm_total))}%`, height: '100%', background: '#f59e0b', borderRadius: 4 }} />
+                      </div>
+                    </div>
+                  )}
+                  {municipio.temp_media_anual != null && (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Thermometer size={11} style={{ color: '#ef4444' }} />
+                          Temp. Media Anual (IDEAM)
+                        </span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#ef4444' }}>
+                          {Number(municipio.temp_media_anual).toFixed(1)} °C
+                        </span>
+                      </div>
+                      <div style={{ marginTop: 4, background: 'var(--bg-surface)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
+                        {/* Escala 6–30°C para Colombia */}
+                        <div style={{ width: `${Math.min(100, Math.max(0, (Number(municipio.temp_media_anual) - 6) / 24 * 100))}%`, height: '100%', background: 'linear-gradient(90deg, #3b82f6, #ef4444)', borderRadius: 4 }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-disabled)', marginTop: 2 }}>
+                        <span>6 °C</span><span>30 °C</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Serie temporal */}
             {serieTemporal.length > 0 && (
               <div>
@@ -420,9 +483,9 @@ export default function FichaMunicipio({
           {/* Footer */}
           <div className="ficha-footer">
             <span className="ficha-footer-icon">📊</span>
-            <span className="ficha-footer-text">Fuente: UNGRD</span>
+            <span className="ficha-footer-text">UNGRD · DANE · IDEAM</span>
             <span className="ficha-footer-dot" />
-            <span className="ficha-footer-text">Datos 2019 – 2026</span>
+            <span className="ficha-footer-text">Datos 2018 – 2026</span>
             <span className="ficha-footer-dot" />
             <span className="ficha-footer-text">Colombia</span>
           </div>

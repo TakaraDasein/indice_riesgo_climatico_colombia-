@@ -359,6 +359,9 @@ export default function MapaD3({
         >
           <span style={{ fontSize: 14 }}>
             {riesgoActivo === 'riesgo_compuesto' ? '⚡' :
+             riesgoActivo === 'triangulado' ? '🔺' :
+             riesgoActivo === 'ipm' ? '👥' :
+             riesgoActivo === 'temperatura' ? '🌡️' :
              riesgoActivo === 'inundacion' ? '🌊' :
              riesgoActivo === 'deslizamiento' ? '⛰️' :
              riesgoActivo === 'incendio' ? '🔥' :
