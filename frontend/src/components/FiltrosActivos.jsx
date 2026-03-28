@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { X, Filter } from 'lucide-react'
-import { TIPOS_RIESGO, NIVEL_COLORS } from '../utils/riesgoColors'
+import { TIPOS_RIESGO, NIVEL_COLORS_BY_RIESGO, SELECTED_INDICATOR } from '../utils/riesgoColors'
 
 /**
  * Barra de chips para los filtros activos + contador de municipios filtrados.
@@ -101,8 +101,8 @@ export default function FiltrosActivos({
     <div style={styles.bar}>
       {/* Contador */}
       <div style={styles.counter}>
-        <Filter size={11} style={{ color: 'var(--accent-cyan)', flexShrink: 0 }} />
-        <span style={{ color: 'var(--accent-cyan)', fontWeight: 600, fontSize: 11 }}>
+        <Filter size={11} style={{ color: SELECTED_INDICATOR, flexShrink: 0 }} />
+        <span style={{ color: SELECTED_INDICATOR, fontWeight: 600, fontSize: 11 }}>
           {count.toLocaleString()}
         </span>
         <span style={{ color: 'var(--text-disabled)', fontSize: 11 }}>
@@ -119,7 +119,7 @@ export default function FiltrosActivos({
         {panelActivo && (
           <Chip
             label={`Análisis: ${panelSelection.size} municipios`}
-            color="var(--accent-purple)"
+            color={SELECTED_INDICATOR}
             onRemove={onRemovePanelSelection}
           />
         )}
@@ -128,7 +128,7 @@ export default function FiltrosActivos({
         {departamentoFiltro && (
           <Chip
             label={`📍 ${departamentoFiltro}`}
-            color="var(--accent-blue)"
+            color="var(--border-strong)"
             onRemove={onRemoveDepartamento}
           />
         )}
@@ -137,7 +137,7 @@ export default function FiltrosActivos({
         {rangoActivo && (
           <Chip
             label={`${tipoInfo?.label ?? 'Índice'}: ${filtros.rango[0].toFixed(1)} – ${filtros.rango[1].toFixed(1)}`}
-            color="var(--accent-cyan)"
+            color="var(--text-secondary)"
             onRemove={onRemoveRango}
           />
         )}
@@ -147,7 +147,7 @@ export default function FiltrosActivos({
           <Chip
             key={nivel}
             label={nivel}
-            color={NIVEL_COLORS[nivel] || 'var(--text-muted)'}
+            color={NIVEL_COLORS_BY_RIESGO[riesgoActivo]?.[nivel] || 'var(--text-muted)'}
             onRemove={() => onRemoveNivel(nivel)}
           />
         ))}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import * as d3 from 'd3'
-import { NIVEL_COLORS, TIPOS_RIESGO } from '../utils/riesgoColors'
+import { NIVEL_COLORS_BY_RIESGO, TIPOS_RIESGO, SIN_DATOS_COLOR, SCALE_ARRAYS } from '../utils/riesgoColors'
 
 const MODE_LABELS = {
   municipios: 'Municipios',
@@ -24,9 +24,9 @@ export default function MapaD3({
   const projectionRef = useRef(null)
   const pathRef = useRef(null)
 
-  // Escala de color para modo calor
+  // Escala de color para modo calor (multipoint warm→fire→storm)
   const colorScaleCalor = d3.scaleSequential([0, 5])
-    .interpolator(d3.interpolateYlOrRd)
+    .interpolator(d3.interpolateRgbBasis(['#f8eee4', '#eebd7b', '#fd7647', '#b84820', '#3f3760']))
 
   // Obtener color de un feature según modo
   const getFeatureColor = useCallback((feature, riesgo, mode) => {
@@ -41,7 +41,7 @@ export default function MapaD3({
 
     if (mode === 'municipios' || mode === 'departamentos') {
       const nivel = props[tipoInfo?.nivel] || 'Sin datos'
-      return NIVEL_COLORS[nivel] || NIVEL_COLORS['Sin datos']
+      return NIVEL_COLORS_BY_RIESGO[riesgo]?.[nivel] ?? SIN_DATOS_COLOR
     }
 
     return '#1e293b'
@@ -127,15 +127,11 @@ export default function MapaD3({
       // Función para color por departamento
       const getDeptColor = (dept) => {
         const data = deptoMap[dept]
-        if (!data || data.count === 0) return NIVEL_COLORS['Sin datos']
-        const avg = data.sum / data.count
-
-        if (mapMode === 'calor' || true) {
-          // Usar calor si modo calor, sino nivel más frecuente
-          const nivelFrecuente = Object.entries(data.nivel)
-            .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Sin datos'
-          return NIVEL_COLORS[nivelFrecuente] || NIVEL_COLORS['Sin datos']
-        }
+        if (!data || data.count === 0) return SIN_DATOS_COLOR
+        // Usar nivel más frecuente con la escala del riesgo activo
+        const nivelFrecuente = Object.entries(data.nivel)
+          .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Sin datos'
+        return NIVEL_COLORS_BY_RIESGO[riesgoActivo]?.[nivelFrecuente] ?? SIN_DATOS_COLOR
       }
 
       // Dibujar municipios con opacidad baja
@@ -297,7 +293,7 @@ export default function MapaD3({
     // Funciones tooltip
     function showTooltip(event, props, nivel, idx) {
       const tipoInfo = TIPOS_RIESGO[riesgoActivo]
-      const nivelColor = NIVEL_COLORS[nivel] || NIVEL_COLORS['Sin datos']
+      const nivelColor = NIVEL_COLORS_BY_RIESGO[riesgoActivo]?.[nivel] ?? SIN_DATOS_COLOR
 
       tooltip
         .style('opacity', '1')
@@ -361,7 +357,7 @@ export default function MapaD3({
       <div className="map-info-overlay">
         <div
           className="map-info-risk-icon"
-          style={{ background: `${tipoInfo?.color}22` }}
+          style={{ background: `${SCALE_ARRAYS[riesgoActivo]?.[2] ?? '#4a4a4a'}22` }}
         >
           <span style={{ fontSize: 14 }}>
             {riesgoActivo === 'riesgo_compuesto' ? '⚡' :
@@ -375,7 +371,7 @@ export default function MapaD3({
           </span>
         </div>
         <div>
-          <div className="map-info-risk-name" style={{ color: tipoInfo?.color }}>
+          <div className="map-info-risk-name" style={{ color: SCALE_ARRAYS[riesgoActivo]?.[3] ?? '#a0a0a0' }}>
             {tipoInfo?.label}
           </div>
           <div className="map-info-mode-tag">{MODE_LABELS[mapMode]}</div>
@@ -404,7 +400,7 @@ export default function MapaD3({
         <div className="map-legend">
           <div className="map-legend-title">Nivel de Riesgo</div>
           <div className="legend-items">
-            {Object.entries(NIVEL_COLORS).map(([nivel, color]) => (
+            {Object.entries(NIVEL_COLORS_BY_RIESGO[riesgoActivo] ?? {}).map(([nivel, color]) => (
               <div key={nivel} className="legend-item">
                 <div className="legend-dot" style={{ background: color }} />
                 <span className="legend-label">{nivel}</span>

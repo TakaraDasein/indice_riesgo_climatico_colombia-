@@ -9,7 +9,10 @@ import {
   ReferenceLine,
 } from 'recharts'
 import {
-  TIPOS_RIESGO, NIVEL_COLORS, NIVEL_BG, NIVEL_TEXT_COLORS,
+  TIPOS_RIESGO, SCALE_ARRAYS,
+  SIN_DATOS_COLOR, SELECTED_INDICATOR,
+  getNivelBg, getNivelTextColor, getNivelColor,
+  COMPARE_COLORS, SERIE_COLORS,
 } from '../utils/riesgoColors'
 
 const ICON_MAP = { Zap, Waves, Mountain, Flame, Sun, Wind, Triangle, Users, Thermometer }
@@ -109,17 +112,16 @@ export default function FichaMunicipio({
     return Object.entries(TIPOS_RIESGO)
       .filter(([k]) => k !== 'riesgo_compuesto')
       .map(([key, info]) => ({
+        key,
         name: info.label,
         value: Number(municipio[info.field] || 0),
-        color: info.color,
+        color: SCALE_ARRAYS[key]?.[3] ?? info.color,
         nivel: municipio[info.nivel] || 'Sin datos',
       }))
       .sort((a, b) => b.value - a.value)
   }, [municipio])
 
   // ── Comparación multi-municipio ───────────────────────────
-  const COMPARE_COLORS = ['#22d3ee', '#f59e0b', '#a78bfa', '#34d399']
-
   const isInComparar = municipio
     ? municipiosComparar.some(m => String(m.cod_municipio) === String(municipio.cod_municipio))
     : false
@@ -154,8 +156,8 @@ export default function FichaMunicipio({
   const tabInfo = TIPOS_RIESGO[tabActivo]
   const tabIdx = municipio ? Number(municipio[tabInfo?.field] || 0) : 0
   const tabNivel = municipio ? (municipio[tabInfo?.nivel] || 'Sin datos') : 'Sin datos'
-  const tabColor = tabInfo?.color || 'var(--accent-blue)'
-  const nivelColor = NIVEL_COLORS[tabNivel] || NIVEL_COLORS['Sin datos']
+  const tabColor = SCALE_ARRAYS[tabActivo]?.[2] ?? '#9c9483'
+  const nivelColor = getNivelColor(tabActivo, tabNivel)
 
   return (
     <div className={`ficha-panel${isOpen ? ' open' : ''}`}>
@@ -187,10 +189,10 @@ export default function FichaMunicipio({
                 style={{
                   marginLeft: 'auto',
                   padding: '2px 8px',
-                  background: isInComparar ? 'rgba(34,211,238,0.15)' : 'var(--bg-elevated)',
-                  border: `1px solid ${isInComparar ? '#22d3ee' : 'var(--border)'}`,
+                  background: isInComparar ? `${SELECTED_INDICATOR}26` : 'var(--bg-elevated)',
+                  border: `1px solid ${isInComparar ? SELECTED_INDICATOR : 'var(--border)'}`,
                   borderRadius: 12,
-                  color: isInComparar ? '#22d3ee' : canAddComparar ? 'var(--text-secondary)' : 'var(--text-disabled)',
+                  color: isInComparar ? SELECTED_INDICATOR : canAddComparar ? 'var(--text-secondary)' : 'var(--text-disabled)',
                   fontSize: 10,
                   fontWeight: 600,
                   cursor: canAddComparar || isInComparar ? 'pointer' : 'not-allowed',
@@ -215,11 +217,11 @@ export default function FichaMunicipio({
                   key={key}
                   className={`ficha-tab${isActive ? ' active' : ''}`}
                   onClick={() => setTabActivo(key)}
-                  style={isActive ? { color: info.color } : {}}
+                  style={isActive ? { color: SCALE_ARRAYS[key]?.[3] } : {}}
                 >
                   <span
                     className="ficha-tab-dot"
-                    style={{ background: info.color, opacity: isActive ? 1 : 0.4 }}
+                    style={{ background: SCALE_ARRAYS[key]?.[2], opacity: isActive ? 1 : 0.4 }}
                   />
                   {Icon && <Icon size={11} />}
                   <span>{info.label.replace('Riesgo ', '').replace(' Compuesto', ' Comp.')}</span>
@@ -253,10 +255,10 @@ export default function FichaMunicipio({
                 {/* Total eventos */}
                 <div
                   className="metric-card"
-                  style={{ '--card-accent': 'var(--accent-cyan)' }}
+                  style={{ '--card-accent': 'var(--border-strong)' }}
                 >
                   <div className="metric-card-label">Total Eventos</div>
-                  <div className="metric-card-value colored" style={{ '--value-color': 'var(--accent-cyan)' }}>
+                  <div className="metric-card-value colored" style={{ '--value-color': SCALE_ARRAYS[tabActivo]?.[2] ?? 'var(--border-strong)' }}>
                     {municipio.total_eventos > 0
                       ? municipio.total_eventos.toLocaleString()
                       : '—'}
@@ -274,8 +276,8 @@ export default function FichaMunicipio({
                     <span
                       className="nivel-badge"
                       style={{
-                        background: NIVEL_BG[tabNivel],
-                        color: NIVEL_TEXT_COLORS[tabNivel] || nivelColor,
+                        background: getNivelBg(tabActivo, tabNivel),
+                        color: getNivelTextColor(tabActivo, tabNivel),
                         border: `1px solid ${nivelColor}44`,
                       }}
                     >
@@ -288,12 +290,12 @@ export default function FichaMunicipio({
                 {/* Ranking dpto */}
                 <div
                   className="metric-card"
-                  style={{ '--card-accent': 'var(--accent-purple)' }}
+                  style={{ '--card-accent': 'var(--border-strong)' }}
                 >
                   <div className="metric-card-label">Ranking Dpto.</div>
                   {rankingDept ? (
                     <>
-                      <div className="metric-card-value colored" style={{ '--value-color': 'var(--accent-purple)' }}>
+                      <div className="metric-card-value colored" style={{ '--value-color': 'var(--border-strong)' }}>
                         #{rankingDept.rank}
                       </div>
                       <div className="metric-card-sub">de {rankingDept.total} munic.</div>
@@ -331,11 +333,11 @@ export default function FichaMunicipio({
                       <Radar
                         name="Índice"
                         dataKey="value"
-                        stroke="var(--accent-cyan)"
-                        fill={tabColor}
+                        stroke={SCALE_ARRAYS[tabActivo]?.[2]}
+                        fill={SCALE_ARRAYS[tabActivo]?.[1]}
                         fillOpacity={0.2}
                         strokeWidth={1.5}
-                        dot={{ fill: 'var(--accent-cyan)', r: 3, strokeWidth: 0 }}
+                        dot={{ fill: SCALE_ARRAYS[tabActivo]?.[3], r: 3, strokeWidth: 0 }}
                       />
                       <RechartsTooltip content={<CustomTooltip />} />
                     </RadarChart>
@@ -451,16 +453,17 @@ export default function FichaMunicipio({
                   const Icon = ICON_MAP[info.icon]
                   const idx = Number(municipio[info.field] || 0)
                   const nivel = municipio[info.nivel] || 'Sin datos'
-                  const nColor = NIVEL_COLORS[nivel] || NIVEL_COLORS['Sin datos']
-                  const nTextColor = NIVEL_TEXT_COLORS[nivel] || NIVEL_TEXT_COLORS['Sin datos']
+                  const nColor = getNivelColor(key, nivel)
+                  const nTextColor = getNivelTextColor(key, nivel)
                   const pct = Math.min(100, (idx / 5) * 100)
+                  const keyColor3 = SCALE_ARRAYS[key]?.[3] ?? info.color
 
                   return (
                     <div key={key} className="indicador-item">
                       <div className="indicador-header">
                         <div
                           className="indicador-label"
-                          style={{ color: info.color }}
+                          style={{ color: keyColor3 }}
                         >
                           {Icon && <Icon size={13} />}
                           {info.label}
@@ -470,7 +473,7 @@ export default function FichaMunicipio({
                           <span
                             className="indicador-nivel-text"
                             style={{
-                              background: NIVEL_BG[nivel],
+                              background: getNivelBg(key, nivel),
                               color: nTextColor,
                               border: `1px solid ${nColor}44`,
                             }}
@@ -484,7 +487,7 @@ export default function FichaMunicipio({
                           className="indicador-progress-fill"
                           style={{
                             width: `${pct}%`,
-                            background: `linear-gradient(90deg, ${info.color}aa, ${info.color})`,
+                            background: `linear-gradient(90deg, ${SCALE_ARRAYS[key]?.[1] ?? info.color}, ${keyColor3})`,
                           }}
                         />
                       </div>
@@ -548,10 +551,10 @@ export default function FichaMunicipio({
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Users size={11} style={{ color: '#f59e0b' }} />
+                          <Users size={11} style={{ color: '#bd7341' }} />
                           IPM Total (Censo 2018)
                         </span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#bd7341' }}>
                           {Number(municipio.ipm_total).toFixed(1)}%
                         </span>
                       </div>
@@ -564,7 +567,7 @@ export default function FichaMunicipio({
                         )}
                       </div>
                       <div style={{ marginTop: 4, background: 'var(--bg-surface)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.min(100, Number(municipio.ipm_total))}%`, height: '100%', background: '#f59e0b', borderRadius: 4 }} />
+                        <div style={{ width: `${Math.min(100, Number(municipio.ipm_total))}%`, height: '100%', background: '#bd7341', borderRadius: 4 }} />
                       </div>
                     </div>
                   )}
@@ -572,16 +575,16 @@ export default function FichaMunicipio({
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Thermometer size={11} style={{ color: '#ef4444' }} />
+                          <Thermometer size={11} style={{ color: '#c07040' }} />
                           Temp. Media Anual (IDEAM)
                         </span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#ef4444' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#c07040' }}>
                           {Number(municipio.temp_media_anual).toFixed(1)} °C
                         </span>
                       </div>
                       <div style={{ marginTop: 4, background: 'var(--bg-surface)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
                         {/* Escala 6–30°C para Colombia */}
-                        <div style={{ width: `${Math.min(100, Math.max(0, (Number(municipio.temp_media_anual) - 6) / 24 * 100))}%`, height: '100%', background: 'linear-gradient(90deg, #3b82f6, #ef4444)', borderRadius: 4 }} />
+                        <div style={{ width: `${Math.min(100, Math.max(0, (Number(municipio.temp_media_anual) - 6) / 24 * 100))}%`, height: '100%', background: 'linear-gradient(90deg, #f5d4a0, #7a3020)', borderRadius: 4 }} />
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-disabled)', marginTop: 2 }}>
                         <span>6 °C</span><span>30 °C</span>
@@ -633,11 +636,11 @@ export default function FichaMunicipio({
                           }}
                         />
                       )}
-                      <Line type="monotone" dataKey="inundacion" stroke="#3b82f6" strokeWidth={1.5} dot={false} name="Inundación" />
-                      <Line type="monotone" dataKey="deslizamiento" stroke="#f59e0b" strokeWidth={1.5} dot={false} name="Deslizamiento" />
-                      <Line type="monotone" dataKey="incendio" stroke="#ef4444" strokeWidth={1.5} dot={false} name="Incendio" />
-                      <Line type="monotone" dataKey="sequia" stroke="#eab308" strokeWidth={1.5} dot={false} name="Sequía" />
-                      <Line type="monotone" dataKey="evento_extremo" stroke="#8b5cf6" strokeWidth={1.5} dot={false} name="Ev. Extremo" />
+                      <Line type="monotone" dataKey="inundacion" stroke={SERIE_COLORS.inundacion} strokeWidth={1.5} dot={false} name="Inundación" />
+                      <Line type="monotone" dataKey="deslizamiento" stroke={SERIE_COLORS.deslizamiento} strokeWidth={1.5} dot={false} name="Deslizamiento" />
+                      <Line type="monotone" dataKey="incendio" stroke={SERIE_COLORS.incendio} strokeWidth={1.5} dot={false} name="Incendio" />
+                      <Line type="monotone" dataKey="sequia" stroke={SERIE_COLORS.sequia} strokeWidth={1.5} dot={false} name="Sequía" />
+                      <Line type="monotone" dataKey="evento_extremo" stroke={SERIE_COLORS.evento_extremo} strokeWidth={1.5} dot={false} name="Ev. Extremo" />
                       <Legend
                         iconSize={8}
                         wrapperStyle={{ fontSize: 9, color: 'var(--text-muted)', paddingTop: 4 }}

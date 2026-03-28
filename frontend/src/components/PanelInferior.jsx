@@ -16,23 +16,23 @@ import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { TIPOS_RIESGO, NIVEL_COLORS } from '../utils/riesgoColors'
+import { TIPOS_RIESGO, NIVEL_COLORS_BY_RIESGO, SCALE_ARRAYS, SIN_DATOS_COLOR } from '../utils/riesgoColors'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 // ─── Campos disponibles para scatter / correlación ──────────────
 const CAMPOS = [
-  { key: 'idx_riesgo_compuesto', label: 'Riesgo Compuesto', color: '#8b5cf6' },
-  { key: 'idx_triangulado',      label: 'Índice Triangulado', color: '#e879f9' },
-  { key: 'idx_inundacion',       label: 'Inundación',         color: '#3b82f6' },
-  { key: 'idx_deslizamiento',    label: 'Deslizamiento',      color: '#a78bfa' },
-  { key: 'idx_incendio',         label: 'Incendio',           color: '#f97316' },
-  { key: 'idx_sequia',           label: 'Sequía',             color: '#fbbf24' },
-  { key: 'idx_evento_extremo',   label: 'Vientos/Temporal',   color: '#10b981' },
-  { key: 'idx_ipm',              label: 'Pobreza Multidim.',  color: '#f59e0b' },
-  { key: 'idx_temperatura',      label: 'Estrés Térmico',     color: '#ef4444' },
-  { key: 'ipm_total',            label: 'IPM % Total',        color: '#fb923c' },
-  { key: 'temp_media_anual',     label: 'Temp. Media (°C)',   color: '#f87171' },
-  { key: 'total_eventos',        label: 'Total Eventos',      color: '#22d3ee' },
+  { key: 'idx_riesgo_compuesto', label: 'Riesgo Compuesto', color: '#9c9483' },
+  { key: 'idx_triangulado',      label: 'Índice Triangulado', color: '#b4a070' },
+  { key: 'idx_inundacion',       label: 'Inundación',         color: '#9cac8b' },
+  { key: 'idx_deslizamiento',    label: 'Deslizamiento',      color: '#bd7341' },
+  { key: 'idx_incendio',         label: 'Incendio',           color: '#fd7647' },
+  { key: 'idx_sequia',           label: 'Sequía',             color: '#c99040' },
+  { key: 'idx_evento_extremo',   label: 'Vientos/Temporal',   color: '#d55a7b' },
+  { key: 'idx_ipm',              label: 'Pobreza Multidim.',  color: '#808070' },
+  { key: 'idx_temperatura',      label: 'Estrés Térmico',     color: '#eebd7b' },
+  { key: 'ipm_total',            label: 'IPM % Total',        color: '#808070' },
+  { key: 'temp_media_anual',     label: 'Temp. Media (°C)',   color: '#c07040' },
+  { key: 'total_eventos',        label: 'Total Eventos',      color: '#a0a0a0' },
 ]
 
 const campoByKey = Object.fromEntries(CAMPOS.map(c => [c.key, c]))
@@ -55,10 +55,10 @@ function ScatterTooltipContent({ active, payload }) {
         {d.municipio}
       </p>
       <p style={{ color: 'var(--text-muted)', marginBottom: 2 }}>{d.departamento}</p>
-      <p style={{ color: '#22d3ee' }}>
+      <p style={{ color: 'var(--text-secondary)' }}>
         X: <strong>{typeof d.x === 'number' ? d.x.toFixed(3) : d.x}</strong>
       </p>
-      <p style={{ color: '#f59e0b' }}>
+      <p style={{ color: 'var(--text-muted)' }}>
         Y: <strong>{typeof d.y === 'number' ? d.y.toFixed(3) : d.y}</strong>
       </p>
     </div>
@@ -66,7 +66,7 @@ function ScatterTooltipContent({ active, payload }) {
 }
 
 // ─── Componente Scatter ──────────────────────────────────────────
-function TabScatter({ datos, municipioSeleccionado, onSelectMunicipio, departamentoFiltro, panelSelection, onPanelSelection }) {
+function TabScatter({ datos, riesgoActivo, municipioSeleccionado, onSelectMunicipio, departamentoFiltro, panelSelection, onPanelSelection }) {
   const [xKey, setXKey] = useState('idx_riesgo_compuesto')
   const [yKey, setYKey] = useState('idx_ipm')
   // Local pending selection (before pushing upstream)
@@ -150,7 +150,7 @@ function TabScatter({ datos, municipioSeleccionado, onSelectMunicipio, departame
               onClick={applySelection}
               style={{
                 padding: '3px 9px', fontSize: 10, fontFamily: 'var(--font-sans)',
-                background: 'var(--accent-purple)', color: '#fff', border: 'none',
+                background: 'var(--border-strong)', color: 'var(--text-primary)', border: 'none',
                 borderRadius: 6, cursor: 'pointer', flexShrink: 0, fontWeight: 600,
               }}
               title="Filtrar mapa con los puntos seleccionados"
@@ -212,10 +212,10 @@ function TabScatter({ datos, municipioSeleccionado, onSelectMunicipio, departame
                   <Cell
                     key={i}
                     fill={
-                      isLocalSel ? '#e879f9'
-                      : isPanelSel ? '#a78bfa'
+                      isLocalSel ? (SCALE_ARRAYS[riesgoActivo]?.[3] ?? '#6b6050')
+                      : isPanelSel ? (SCALE_ARRAYS[riesgoActivo]?.[2] ?? '#9c9483')
                       : isSel ? '#ffffff'
-                      : NIVEL_COLORS[p.nivel] || NIVEL_COLORS['Sin datos']
+                      : (NIVEL_COLORS_BY_RIESGO[riesgoActivo]?.[p.nivel] ?? SIN_DATOS_COLOR)
                     }
                     opacity={isLocalSel || isPanelSel || isSel ? 1 : 0.5}
                     r={isLocalSel ? 6 : isPanelSel ? 5 : isSel ? 5 : 3}
@@ -325,7 +325,7 @@ function TabBoxPlot({ datos, panelSelection, onPanelSelection }) {
     return Math.max(...boxData.map(d => d.stats?.max || 0), 1)
   }, [boxData])
 
-  const campoColor = campoByKey[campo]?.color || '#8b5cf6'
+  const campoColor = campoByKey[campo]?.color || 'var(--border-strong)'
 
   // dept-to-cod lookup
   const deptCods = useMemo(() => {
@@ -407,10 +407,15 @@ function pearsonR(xs, ys) {
 const HEATMAP_CAMPOS = CAMPOS.slice(0, 9)  // índices principales
 
 function corColor(r) {
-  if (isNaN(r)) return '#1e293b'
-  // -1 → azul, 0 → gris, +1 → rojo
-  if (r > 0) return `rgba(239,68,68,${Math.abs(r).toFixed(2)})`
-  return `rgba(59,130,246,${Math.abs(r).toFixed(2)})`
+  if (isNaN(r)) return '#262626'
+  // negativo → verde oscuro, cero → panel background (invisible), positivo → naranja fuego
+  const abs = Math.abs(r)
+  if (r > 0) {
+    // 0→transparent, 1→#b84820 fire orange
+    return `rgba(184,72,32,${abs.toFixed(2)})`
+  }
+  // 0→transparent, -1→#2d4d35 cool green
+  return `rgba(45,77,53,${abs.toFixed(2)})`
 }
 
 function TabCorrelacion({ datos, onPanelSelection }) {
@@ -483,7 +488,7 @@ function TabCorrelacion({ datos, onPanelSelection }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 6 }}>
       <div style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
-        Pearson r — azul: negativo · rojo: positivo · clic = filtrar municipios con valores altos en ambas variables
+        Pearson r — verde: correlación negativa · naranja: positiva · clic = filtrar municipios con valores altos en ambas variables
       </div>
       <div style={{ overflowX: 'auto', overflowY: 'auto', flex: 1 }}>
         <table style={{ borderCollapse: 'collapse', fontSize: 9 }}>
@@ -532,8 +537,8 @@ function TabCorrelacion({ datos, onPanelSelection }) {
                         color: Math.abs(r) > 0.5 ? 'white' : 'rgba(255,255,255,0.4)',
                         fontSize: 8,
                         cursor: ri !== ci ? 'pointer' : 'default',
-                        border: isSel ? '2px solid #e879f9' : '1px solid rgba(255,255,255,0.04)',
-                        outline: isSel ? '1px solid #e879f950' : 'none',
+                        border: isSel ? `2px solid #f8eee4` : '1px solid rgba(255,255,255,0.04)',
+                        outline: isSel ? '1px solid #f8eee450' : 'none',
                         boxSizing: 'border-box',
                       }}
                     >
@@ -664,6 +669,7 @@ export default function PanelInferior({
           {tab === 'scatter' && (
             <TabScatter
               datos={datos}
+              riesgoActivo={riesgoActivo}
               municipioSeleccionado={municipioSeleccionado}
               onSelectMunicipio={onSelectMunicipio}
               departamentoFiltro={departamentoFiltro}

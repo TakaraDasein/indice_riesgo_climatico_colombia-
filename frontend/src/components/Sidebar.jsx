@@ -4,8 +4,8 @@ import {
   ChevronDown, ChevronUp, MapPin, BarChart2,
 } from 'lucide-react'
 import {
-  TIPOS_RIESGO, NIVEL_COLORS, NIVEL_BG, NIVEL_TEXT_COLORS,
-  NIVELES_ORDEN, nivelBadgeStyle,
+  TIPOS_RIESGO, NIVEL_COLORS_BY_RIESGO, SCALE_ARRAYS,
+  NIVELES_ORDEN,
 } from '../utils/riesgoColors'
 
 const ICON_MAP = { Zap, Waves, Mountain, Flame, Sun, Wind, Triangle, Users, Thermometer }
@@ -44,7 +44,7 @@ export default function Sidebar({
       nivel,
       count: stats.niveles_riesgo[nivel] || 0,
       pct: ((stats.niveles_riesgo[nivel] || 0) / total) * 100,
-      color: NIVEL_COLORS[nivel],
+      color: NIVEL_COLORS_BY_RIESGO[riesgoActivo]?.[nivel] || '#4a4a4a',
     }))
   }, [stats])
 
@@ -112,8 +112,8 @@ export default function Sidebar({
                 onClick={() => onRiesgoChange(key)}
                 style={{
                   width: 36, height: 36,
-                  background: riesgoActivo === key ? `${info.color}22` : 'var(--bg-elevated)',
-                  border: `1px solid ${riesgoActivo === key ? info.color : 'var(--border)'}`,
+                  background: riesgoActivo === key ? `${SCALE_ARRAYS[key]?.[2] ?? '#9c9483'}22` : 'var(--bg-elevated)',
+                  border: `1px solid ${riesgoActivo === key ? (SCALE_ARRAYS[key]?.[3] ?? '#6b6050') : 'var(--border)'}`,
                   borderRadius: 'var(--radius-md)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
@@ -121,7 +121,7 @@ export default function Sidebar({
                 }}
                 title={info.label}
               >
-                {Icon && <Icon size={16} color={riesgoActivo === key ? info.color : 'var(--text-muted)'} />}
+                {Icon && <Icon size={16} color={riesgoActivo === key ? (SCALE_ARRAYS[key]?.[3] ?? '#9c9483') : 'var(--text-muted)'} />}
               </button>
             )
           })}
@@ -166,26 +166,26 @@ export default function Sidebar({
                 <button
                   key={key}
                   className={`risk-tab${isActive ? ' active' : ''}`}
-                  style={{ '--tab-color': info.color }}
+                  style={{ '--tab-color': SCALE_ARRAYS[key]?.[3] ?? '#6b6050' }}
                   onClick={() => onRiesgoChange(key)}
                   title={info.description}
                 >
                   <div
                     className="risk-tab-icon"
                     style={{
-                      background: isActive ? `${info.color}22` : 'rgba(255,255,255,0.04)',
+                      background: isActive ? `${SCALE_ARRAYS[key]?.[2] ?? '#9c9483'}22` : 'rgba(255,255,255,0.04)',
                     }}
                   >
                     {Icon && (
                       <Icon
                         size={16}
-                        color={isActive ? info.color : 'var(--text-muted)'}
+                        color={isActive ? (SCALE_ARRAYS[key]?.[3] ?? '#9c9483') : 'var(--text-muted)'}
                       />
                     )}
                   </div>
                   <span
                     className="risk-tab-label"
-                    style={{ color: isActive ? info.color : undefined }}
+                    style={{ color: isActive ? (SCALE_ARRAYS[key]?.[3] ?? undefined) : undefined }}
                   >
                     {info.label}
                   </span>
@@ -260,7 +260,7 @@ export default function Sidebar({
                         rango: [Number(e.target.value), Math.max(Number(e.target.value), filtros.rango?.[1] ?? 5)],
                       })}
                       style={{
-                        width: '100%', accentColor: 'var(--accent-blue)',
+                        width: '100%', accentColor: 'var(--text-primary)',
                         height: 4, cursor: 'pointer',
                       }}
                     />
@@ -278,7 +278,7 @@ export default function Sidebar({
                         rango: [Math.min(filtros.rango?.[0] ?? 0, Number(e.target.value)), Number(e.target.value)],
                       })}
                       style={{
-                        width: '100%', accentColor: 'var(--accent-cyan)',
+                        width: '100%', accentColor: 'var(--text-primary)',
                         height: 4, cursor: 'pointer',
                       }}
                     />
@@ -296,11 +296,11 @@ export default function Sidebar({
                         type="checkbox"
                         checked={!filtros.niveles || filtros.niveles.length === 0 || filtros.niveles.includes(nivel)}
                         onChange={() => toggleNivel(nivel)}
-                        style={{ '--check-color': NIVEL_COLORS[nivel] }}
+                        style={{ '--check-color': NIVEL_COLORS_BY_RIESGO[riesgoActivo]?.[nivel] ?? '#4a4a4a' }}
                       />
                       <span
                         className="nivel-checkbox-dot"
-                        style={{ background: NIVEL_COLORS[nivel] }}
+                        style={{ background: NIVEL_COLORS_BY_RIESGO[riesgoActivo]?.[nivel] ?? '#4a4a4a' }}
                       />
                       <span className="nivel-checkbox-label">{nivel}</span>
                     </label>
@@ -340,7 +340,7 @@ export default function Sidebar({
                 <div className="stat-mini-label">Total munic.</div>
               </div>
               <div className="stat-mini-card">
-                <div className="stat-mini-value" style={{ color: 'var(--accent-cyan)' }}>
+                <div className="stat-mini-value" style={{ color: 'var(--text-primary)' }}>
                   {muniConDatos.toLocaleString()}
                 </div>
                 <div className="stat-mini-label">Con datos</div>
@@ -376,7 +376,7 @@ export default function Sidebar({
             </div>
             <div className="top-municipios-list">
               {topMunicipios.map((muni, i) => {
-                const nivelColor = NIVEL_COLORS[muni.nivel] || NIVEL_COLORS['Sin datos']
+                  const nivelColor = NIVEL_COLORS_BY_RIESGO[riesgoActivo]?.[muni.nivel] || '#4a4a4a'
                 const isSelected = municipioSeleccionado &&
                   String(municipioSeleccionado.cod_municipio) === String(muni.cod || muni.cod_municipio)
                 // Valor a mostrar: índice si disponible, sino eventos
@@ -431,7 +431,7 @@ export default function Sidebar({
                   fontFamily: 'var(--font-sans)',
                   transition: 'border-color 0.15s, color 0.15s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#e879f9'; e.currentTarget.style.color = '#e879f9' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--selected-indicator)'; e.currentTarget.style.color = 'var(--selected-indicator)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
               >
                 <span style={{ fontSize: 13 }}>🔺</span>
