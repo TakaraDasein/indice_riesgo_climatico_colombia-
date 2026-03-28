@@ -10,9 +10,11 @@ import { TIPOS_RIESGO, NIVEL_COLORS } from '../utils/riesgoColors'
  *   departamentoFiltro – string
  *   riesgoActivo     – string (clave de TIPOS_RIESGO)
  *   geojson          – FeatureCollection completo
+ *   panelSelection   – Set<string> | null  (códigos seleccionados desde el panel inferior)
  *   onRemoveNivel    – (nivel) => void
  *   onRemoveRango    – () => void
  *   onRemoveDepartamento – () => void
+ *   onRemovePanelSelection – () => void
  *   onClearAll       – () => void
  */
 export default function FiltrosActivos({
@@ -20,9 +22,11 @@ export default function FiltrosActivos({
   departamentoFiltro,
   riesgoActivo,
   geojson,
+  panelSelection,
   onRemoveNivel,
   onRemoveRango,
   onRemoveDepartamento,
+  onRemovePanelSelection,
   onClearAll,
 }) {
   const tipoInfo = TIPOS_RIESGO[riesgoActivo]
@@ -35,7 +39,9 @@ export default function FiltrosActivos({
     ? filtros.niveles
     : []
 
-  const hayChips = rangoActivo || nivelesActivos.length > 0 || !!departamentoFiltro
+  const panelActivo = panelSelection && panelSelection.size > 0
+
+  const hayChips = rangoActivo || nivelesActivos.length > 0 || !!departamentoFiltro || panelActivo
 
   // Contar municipios que pasan los filtros activos
   const { count, total } = useMemo(() => {
@@ -47,6 +53,11 @@ export default function FiltrosActivos({
       const props = f.properties || {}
       const field = tipoInfo?.field
       const nivelField = tipoInfo?.nivel
+
+      // Filtro panel inferior
+      if (panelActivo) {
+        if (!panelSelection.has(String(props.cod_municipio))) return false
+      }
 
       // Filtro departamento
       if (departamentoFiltro) {
@@ -70,7 +81,7 @@ export default function FiltrosActivos({
     }).length
 
     return { count, total }
-  }, [geojson, filtros, departamentoFiltro, riesgoActivo, hayChips, tipoInfo, rangoActivo, nivelesActivos])
+  }, [geojson, filtros, departamentoFiltro, riesgoActivo, panelSelection, hayChips, tipoInfo, rangoActivo, nivelesActivos, panelActivo])
 
   if (!hayChips) {
     // Solo mostrar contador pasivo cuando no hay filtros
@@ -103,6 +114,15 @@ export default function FiltrosActivos({
 
       {/* Chips */}
       <div style={styles.chips}>
+
+        {/* Chip selección panel inferior */}
+        {panelActivo && (
+          <Chip
+            label={`Análisis: ${panelSelection.size} municipios`}
+            color="var(--accent-purple)"
+            onRemove={onRemovePanelSelection}
+          />
+        )}
 
         {/* Chip departamento */}
         {departamentoFiltro && (

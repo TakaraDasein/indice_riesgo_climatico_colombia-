@@ -15,6 +15,7 @@ export default function MapaD3({
   filtros,
   municipioSeleccionado,
   departamentoFiltro,
+  panelSelection,
   onSelectMunicipio,
 }) {
   const svgRef = useRef(null)
@@ -47,9 +48,14 @@ export default function MapaD3({
   }, [])
 
   // Aplicar filtros a un feature
-  const pasaFiltros = useCallback((feature, riesgo, filtros, departamentoFiltro) => {
+  const pasaFiltros = useCallback((feature, riesgo, filtros, departamentoFiltro, panelSelection) => {
     const props = feature.properties || {}
     const tipoInfo = TIPOS_RIESGO[riesgo]
+
+    // Filtro selección desde panel inferior
+    if (panelSelection && panelSelection.size > 0) {
+      if (!panelSelection.has(String(props.cod_municipio))) return false
+    }
 
     // Filtro departamento
     if (departamentoFiltro && departamentoFiltro !== '') {
@@ -228,12 +234,12 @@ export default function MapaD3({
         })
         .attr('d', path)
         .attr('fill', f => {
-          if (!pasaFiltros(f, riesgoActivo, filtros, departamentoFiltro)) {
+          if (!pasaFiltros(f, riesgoActivo, filtros, departamentoFiltro, panelSelection)) {
             return 'rgba(255,255,255,0.04)'
           }
           return getFeatureColor(f, riesgoActivo, mapMode)
         })
-        .attr('opacity', f => pasaFiltros(f, riesgoActivo, filtros, departamentoFiltro) ? 1 : 0.2)
+        .attr('opacity', f => pasaFiltros(f, riesgoActivo, filtros, departamentoFiltro, panelSelection) ? 1 : 0.2)
         .attr('stroke', f => {
           const cod = f.properties?.cod_municipio
           const sel = municipioSeleccionado?.cod_municipio
@@ -319,7 +325,7 @@ export default function MapaD3({
     return () => {
       svg.on('.zoom', null)
     }
-  }, [geojson, riesgoActivo, mapMode, filtros, municipioSeleccionado, departamentoFiltro, getFeatureColor, pasaFiltros])
+  }, [geojson, riesgoActivo, mapMode, filtros, municipioSeleccionado, departamentoFiltro, panelSelection, getFeatureColor, pasaFiltros])
 
   // Handlers de zoom externo
   const handleZoomIn = () => {

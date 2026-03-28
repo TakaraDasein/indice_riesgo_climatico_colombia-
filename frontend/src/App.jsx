@@ -22,6 +22,9 @@ export default function App() {
   const [municipiosComparar, setMunicipiosComparar] = useState([])
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [docOpen, setDocOpen] = useState(false)
+  // Selección desde panel inferior (scatter/boxplot/correlación)
+  // null = sin selección activa; Set<string> = códigos filtrados
+  const [panelSelection, setPanelSelection] = useState(null)
 
   // ── Datos del backend ─────────────────────────────────────
   const { geojson, stats, departamentos, loading, error, refetch } = useMapData()
@@ -68,6 +71,13 @@ export default function App() {
   const handleClearAllFiltros = useCallback(() => {
     setFiltros({ rango: [0, 5], niveles: [] })
     setDepartamentoFiltro('')
+    setPanelSelection(null)
+  }, [])
+
+  // ── Panel inferior: selección → filtro dinámico ───────────
+  const handlePanelSelection = useCallback((codigos) => {
+    // codigos: Set<string> | null
+    setPanelSelection(codigos && codigos.size > 0 ? codigos : null)
   }, [])
 
   // ── Callbacks de comparación de municipios ────────────────
@@ -196,6 +206,7 @@ export default function App() {
         filtros={filtros}
         onFiltrosChange={setFiltros}
         stats={stats}
+        geojson={geojson}
         departamentos={departamentos}
         departamentoFiltro={departamentoFiltro}
         onDepartamentoChange={setDepartamentoFiltro}
@@ -203,6 +214,7 @@ export default function App() {
         onSelectMunicipio={handleSelectMunicipio}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(c => !c)}
+        onOpenDoc={() => setDocOpen(true)}
       />
 
       {/* Columna central: mapa + panel inferior */}
@@ -218,6 +230,7 @@ export default function App() {
               filtros={filtros}
               municipioSeleccionado={municipioSeleccionado}
               departamentoFiltro={departamentoFiltro}
+              panelSelection={panelSelection}
               onSelectMunicipio={handleSelectMunicipio}
             />
           ) : (
@@ -234,9 +247,11 @@ export default function App() {
               departamentoFiltro={departamentoFiltro}
               riesgoActivo={riesgoActivo}
               geojson={geojson}
+              panelSelection={panelSelection}
               onRemoveNivel={handleRemoveNivel}
               onRemoveRango={handleRemoveRango}
               onRemoveDepartamento={handleRemoveDepartamento}
+              onRemovePanelSelection={() => setPanelSelection(null)}
               onClearAll={handleClearAllFiltros}
             />
           )}
@@ -248,32 +263,6 @@ export default function App() {
               Haz clic en un municipio para ver su ficha de riesgos
             </div>
           )}
-
-          {/* Botón documentación */}
-          <button
-            onClick={() => setDocOpen(true)}
-            title="Acerca del índice y metodología"
-            style={{
-              position: 'absolute', bottom: 16, left: 16,
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              padding: '6px 12px',
-              display: 'flex', alignItems: 'center', gap: 6,
-              cursor: 'pointer',
-              fontSize: 11, fontWeight: 600,
-              color: 'var(--text-secondary)',
-              fontFamily: 'var(--font-sans)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-              zIndex: 10,
-              transition: 'border-color 0.15s, color 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#e879f9'; e.currentTarget.style.color = '#e879f9' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-          >
-            <span style={{ fontSize: 13 }}>🔺</span>
-            Metodología e Índices
-          </button>
         </main>
 
         {/* Panel de análisis inferior */}
@@ -283,6 +272,8 @@ export default function App() {
             riesgoActivo={riesgoActivo}
             departamentoFiltro={departamentoFiltro}
             municipioSeleccionado={municipioSeleccionado}
+            panelSelection={panelSelection}
+            onPanelSelection={handlePanelSelection}
             onSelectMunicipio={handleSelectMunicipio}
           />
         )}

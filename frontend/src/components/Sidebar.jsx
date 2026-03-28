@@ -24,6 +24,7 @@ export default function Sidebar({
   filtros,
   onFiltrosChange,
   stats,
+  geojson,
   departamentos,
   departamentoFiltro,
   onDepartamentoChange,
@@ -31,6 +32,7 @@ export default function Sidebar({
   onSelectMunicipio,
   collapsed,
   onToggleCollapse,
+  onOpenDoc,
 }) {
   const [filtrosOpen, setFiltrosOpen] = useState(false)
 
@@ -46,10 +48,32 @@ export default function Sidebar({
     }))
   }, [stats])
 
+  // Top 10 dinámico según riesgoActivo (calculado desde geojson)
   const topMunicipios = useMemo(() => {
+    const tipoInfo = TIPOS_RIESGO[riesgoActivo]
+    // Si hay geojson, computar desde los features
+    if (geojson?.features && tipoInfo?.field) {
+      return geojson.features
+        .map(f => f.properties || {})
+        .filter(p => {
+          const v = Number(p[tipoInfo.field])
+          return !isNaN(v) && v > 0
+        })
+        .sort((a, b) => Number(b[tipoInfo.field]) - Number(a[tipoInfo.field]))
+        .slice(0, 10)
+        .map(p => ({
+          cod: p.cod_municipio,
+          nombre: p.municipio,
+          departamento: p.departamento,
+          valor: Number(p[tipoInfo.field]),
+          nivel: p[tipoInfo.nivel] || 'Sin datos',
+          total_eventos: p.total_eventos,
+        }))
+    }
+    // Fallback: stats.json (solo tiene riesgo_compuesto)
     if (!stats?.top_municipios) return []
     return stats.top_municipios.slice(0, 10)
-  }, [stats])
+  }, [geojson, riesgoActivo, stats])
 
   const munisSinDatos = useMemo(() => {
     if (!stats) return 0
@@ -344,18 +368,30 @@ export default function Sidebar({
         {/* Top 10 municipios */}
         {topMunicipios.length > 0 && (
           <div className="sidebar-section" style={{ borderBottom: 'none' }}>
-            <div className="sidebar-section-title">Top Municipios</div>
+            <div className="sidebar-section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Top Municipios</span>
+              <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>
+                {TIPOS_RIESGO[riesgoActivo]?.label}
+              </span>
+            </div>
             <div className="top-municipios-list">
               {topMunicipios.map((muni, i) => {
                 const nivelColor = NIVEL_COLORS[muni.nivel] || NIVEL_COLORS['Sin datos']
                 const isSelected = municipioSeleccionado &&
-                  String(municipioSeleccionado.cod_municipio) === String(muni.cod)
+                  String(municipioSeleccionado.cod_municipio) === String(muni.cod || muni.cod_municipio)
+                // Valor a mostrar: índice si disponible, sino eventos
+                const displayVal = muni.valor != null
+                  ? muni.valor.toFixed(2)
+                  : (muni.total_eventos ?? '—')
 
                 return (
                   <div
-                    key={muni.cod || i}
+                    key={muni.cod || muni.cod_municipio || i}
                     className={`top-municipio-item${isSelected ? ' selected' : ''}`}
-                    onClick={() => onSelectMunicipio({ ...muni, cod_municipio: muni.cod })}
+                    onClick={() => onSelectMunicipio({
+                      ...muni,
+                      cod_municipio: muni.cod || muni.cod_municipio,
+                    })}
                   >
                     <span className="top-muni-rank">{i + 1}</span>
                     <div className="top-muni-info">
@@ -370,12 +406,38 @@ export default function Sidebar({
                         border: `1px solid ${nivelColor}44`,
                       }}
                     >
-                      {muni.total_eventos}
+                      {displayVal}
                     </span>
                   </div>
                 )
               })}
             </div>
+
+            {/* Botón documentación / bibliografía */}
+            {onOpenDoc && (
+              <button
+                onClick={onOpenDoc}
+                style={{
+                  marginTop: 12,
+                  width: '100%',
+                  padding: '7px 12px',
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  cursor: 'pointer',
+                  fontSize: 11, fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  fontFamily: 'var(--font-sans)',
+                  transition: 'border-color 0.15s, color 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#e879f9'; e.currentTarget.style.color = '#e879f9' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+              >
+                <span style={{ fontSize: 13 }}>🔺</span>
+                Metodología e Índices
+              </button>
+            )}
           </div>
         )}
       </div>

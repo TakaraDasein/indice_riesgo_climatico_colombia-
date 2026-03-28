@@ -7,7 +7,9 @@
  *   riesgoActivo          – string (clave TIPOS_RIESGO)
  *   departamentoFiltro    – string
  *   municipioSeleccionado – object | null
+ *   panelSelection        – Set<string> | null  (selección actual desde el panel)
  *   onSelectMunicipio     – (props) => void
+ *   onPanelSelection      – (Set<string> | null) => void
  */
 import { useState, useMemo, useCallback } from 'react'
 import {
@@ -64,9 +66,11 @@ function ScatterTooltipContent({ active, payload }) {
 }
 
 // ─── Componente Scatter ──────────────────────────────────────────
-function TabScatter({ datos, municipioSeleccionado, onSelectMunicipio, departamentoFiltro }) {
+function TabScatter({ datos, municipioSeleccionado, onSelectMunicipio, departamentoFiltro, panelSelection, onPanelSelection }) {
   const [xKey, setXKey] = useState('idx_riesgo_compuesto')
   const [yKey, setYKey] = useState('idx_ipm')
+  // Local pending selection (before pushing upstream)
+  const [localSel, setLocalSel] = useState(() => new Set())
 
   const puntos = useMemo(() => {
     if (!datos) return []
@@ -87,6 +91,29 @@ function TabScatter({ datos, municipioSeleccionado, onSelectMunicipio, departame
   }, [datos, xKey, yKey])
 
   const selCod = municipioSeleccionado?.cod_municipio
+
+  // Toggle a point in the local selection
+  const handleDotClick = useCallback((p) => {
+    const cod = String(p.cod_municipio)
+    setLocalSel(prev => {
+      const next = new Set(prev)
+      if (next.has(cod)) next.delete(cod)
+      else next.add(cod)
+      return next
+    })
+    onSelectMunicipio && onSelectMunicipio(p)
+  }, [onSelectMunicipio])
+
+  // Push local selection upstream as filter
+  const applySelection = useCallback(() => {
+    if (localSel.size === 0) return
+    onPanelSelection && onPanelSelection(new Set(localSel))
+  }, [localSel, onPanelSelection])
+
+  const clearLocalSel = useCallback(() => {
+    setLocalSel(new Set())
+    onPanelSelection && onPanelSelection(null)
+  }, [onPanelSelection])
 
   const selectStyle = {
     background: 'var(--bg-elevated)',
@@ -116,6 +143,38 @@ function TabScatter({ datos, municipioSeleccionado, onSelectMunicipio, departame
         <span style={{ fontSize: 10, color: 'var(--text-disabled)', flexShrink: 0 }}>
           {puntos.length.toLocaleString()} municipios
         </span>
+        {/* Selection controls */}
+        {localSel.size > 0 && (
+          <>
+            <button
+              onClick={applySelection}
+              style={{
+                padding: '3px 9px', fontSize: 10, fontFamily: 'var(--font-sans)',
+                background: 'var(--accent-purple)', color: '#fff', border: 'none',
+                borderRadius: 6, cursor: 'pointer', flexShrink: 0, fontWeight: 600,
+              }}
+              title="Filtrar mapa con los puntos seleccionados"
+            >
+              Filtrar {localSel.size}
+            </button>
+            <button
+              onClick={clearLocalSel}
+              style={{
+                padding: '3px 8px', fontSize: 10, fontFamily: 'var(--font-sans)',
+                background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)',
+                borderRadius: 6, cursor: 'pointer', flexShrink: 0,
+              }}
+              title="Limpiar selección"
+            >
+              ✕
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Instrucción */}
+      <div style={{ fontSize: 9, color: 'var(--text-disabled)', flexShrink: 0, marginTop: -4 }}>
+        Clic en un punto para seleccionarlo · Acumula selección · "Filtrar N" aplica al mapa
       </div>
 
       {/* Scatter chart */}
@@ -145,15 +204,23 @@ function TabScatter({ datos, municipioSeleccionado, onSelectMunicipio, departame
               isAnimationActive={false}
             >
               {puntos.map((p, i) => {
+                const cod = String(p.cod_municipio)
                 const isSel = selCod && String(p.cod_municipio) === String(selCod)
+                const isLocalSel = localSel.has(cod)
+                const isPanelSel = panelSelection && panelSelection.has(cod)
                 return (
                   <Cell
                     key={i}
-                    fill={isSel ? '#ffffff' : NIVEL_COLORS[p.nivel] || NIVEL_COLORS['Sin datos']}
-                    opacity={isSel ? 1 : 0.6}
-                    r={isSel ? 5 : 3}
+                    fill={
+                      isLocalSel ? '#e879f9'
+                      : isPanelSel ? '#a78bfa'
+                      : isSel ? '#ffffff'
+                      : NIVEL_COLORS[p.nivel] || NIVEL_COLORS['Sin datos']
+                    }
+                    opacity={isLocalSel || isPanelSel || isSel ? 1 : 0.5}
+                    r={isLocalSel ? 6 : isPanelSel ? 5 : isSel ? 5 : 3}
                     cursor="pointer"
-                    onClick={() => onSelectMunicipio && onSelectMunicipio(p)}
+                    onClick={() => handleDotClick(p)}
                   />
                 )
               })}
@@ -179,13 +246,25 @@ function calcBoxStats(values) {
   return { min: whiskerLow, q1, median, q3, max: whiskerHigh, mean, n: values.length }
 }
 
-function BoxRow({ label, stats, maxVal, color }) {
+function BoxRow({ label, stats, maxVal, color, selected, onClick }) {
   if (!stats) return null
   const scale = v => `${(v / maxVal) * 100}%`
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-      <span style={{ fontSize: 9, color: 'var(--text-muted)', width: 90, flexShrink: 0, textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
+        cursor: 'pointer',
+        borderRadius: 4,
+        padding: '1px 4px',
+        background: selected ? `${color}18` : 'transparent',
+        border: selected ? `1px solid ${color}44` : '1px solid transparent',
+        transition: 'background 0.12s',
+      }}
+      title={`Clic para filtrar municipios de ${label}`}
+    >
+      <span style={{ fontSize: 9, color: selected ? color : 'var(--text-muted)', width: 90, flexShrink: 0, textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: selected ? 600 : 400 }}>
         {label}
       </span>
       {/* Caja */}
@@ -222,8 +301,9 @@ function BoxRow({ label, stats, maxVal, color }) {
   )
 }
 
-function TabBoxPlot({ datos }) {
+function TabBoxPlot({ datos, panelSelection, onPanelSelection }) {
   const [campo, setCampo] = useState('idx_riesgo_compuesto')
+  const [selectedDept, setSelectedDept] = useState(null)
 
   const boxData = useMemo(() => {
     if (!datos) return []
@@ -247,6 +327,30 @@ function TabBoxPlot({ datos }) {
 
   const campoColor = campoByKey[campo]?.color || '#8b5cf6'
 
+  // dept-to-cod lookup
+  const deptCods = useMemo(() => {
+    if (!datos) return {}
+    const m = {}
+    datos.forEach(d => {
+      const dept = d.departamento || 'Sin datos'
+      if (!m[dept]) m[dept] = []
+      if (d.cod_municipio) m[dept].push(String(d.cod_municipio))
+    })
+    return m
+  }, [datos])
+
+  const handleRowClick = useCallback((dept) => {
+    if (selectedDept === dept) {
+      // deselect
+      setSelectedDept(null)
+      onPanelSelection && onPanelSelection(null)
+    } else {
+      setSelectedDept(dept)
+      const cods = deptCods[dept] || []
+      onPanelSelection && onPanelSelection(new Set(cods))
+    }
+  }, [selectedDept, deptCods, onPanelSelection])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -263,7 +367,7 @@ function TabBoxPlot({ datos }) {
           {CAMPOS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
         </select>
         <span style={{ fontSize: 10, color: 'var(--text-disabled)', marginLeft: 'auto' }}>
-          Mediana por departamento · □ IQR · — whisker
+          Mediana por departamento · □ IQR · — whisker · clic = filtrar
         </span>
       </div>
       <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4 }}>
@@ -274,6 +378,8 @@ function TabBoxPlot({ datos }) {
             stats={stats}
             maxVal={maxVal}
             color={campoColor}
+            selected={selectedDept === dept}
+            onClick={() => handleRowClick(dept)}
           />
         ))}
       </div>
@@ -307,23 +413,16 @@ function corColor(r) {
   return `rgba(59,130,246,${Math.abs(r).toFixed(2)})`
 }
 
-function TabCorrelacion({ datos }) {
+function TabCorrelacion({ datos, onPanelSelection }) {
+  const [selectedCell, setSelectedCell] = useState(null) // [ri, ci]
+
   const matrix = useMemo(() => {
     if (!datos || datos.length < 5) return null
-    // Extraer vectores
-    const vecs = {}
-    HEATMAP_CAMPOS.forEach(c => {
-      vecs[c.key] = datos
-        .map(d => Number(d[c.key]))
-        .filter(v => !isNaN(v) && v > 0)
-    })
-
     const result = []
     for (const rowC of HEATMAP_CAMPOS) {
       const row = []
       for (const colC of HEATMAP_CAMPOS) {
         if (rowC.key === colC.key) { row.push(1); continue }
-        // Pares con ambos valores válidos
         const pairs = datos
           .map(d => [Number(d[rowC.key]), Number(d[colC.key])])
           .filter(([a, b]) => !isNaN(a) && !isNaN(b) && a > 0 && b > 0)
@@ -334,6 +433,42 @@ function TabCorrelacion({ datos }) {
     }
     return result
   }, [datos])
+
+  // Precompute median for each campo (for "high" threshold)
+  const medians = useMemo(() => {
+    if (!datos) return {}
+    const m = {}
+    HEATMAP_CAMPOS.forEach(c => {
+      const vals = datos.map(d => Number(d[c.key])).filter(v => !isNaN(v) && v > 0).sort((a, b) => a - b)
+      m[c.key] = vals[Math.floor(vals.length * 0.5)] || 0
+    })
+    return m
+  }, [datos])
+
+  const handleCellClick = useCallback((ri, ci) => {
+    if (ri === ci) return // diagonal, skip
+    const rowKey = HEATMAP_CAMPOS[ri].key
+    const colKey = HEATMAP_CAMPOS[ci].key
+    // If same cell clicked again, deselect
+    if (selectedCell && selectedCell[0] === ri && selectedCell[1] === ci) {
+      setSelectedCell(null)
+      onPanelSelection && onPanelSelection(null)
+      return
+    }
+    setSelectedCell([ri, ci])
+    // Select municipios with above-median values in both vars
+    const medR = medians[rowKey] || 0
+    const medC = medians[colKey] || 0
+    const cods = datos
+      .filter(d => {
+        const a = Number(d[rowKey])
+        const b = Number(d[colKey])
+        return !isNaN(a) && !isNaN(b) && a >= medR && b >= medC
+      })
+      .map(d => String(d.cod_municipio))
+      .filter(Boolean)
+    onPanelSelection && onPanelSelection(new Set(cods))
+  }, [selectedCell, datos, medians, onPanelSelection])
 
   if (!matrix) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)', fontSize: 12 }}>
@@ -348,7 +483,7 @@ function TabCorrelacion({ datos }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 6 }}>
       <div style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
-        Pearson r — azul: negativo · rojo: positivo
+        Pearson r — azul: negativo · rojo: positivo · clic = filtrar municipios con valores altos en ambas variables
       </div>
       <div style={{ overflowX: 'auto', overflowY: 'auto', flex: 1 }}>
         <table style={{ borderCollapse: 'collapse', fontSize: 9 }}>
@@ -383,23 +518,29 @@ function TabCorrelacion({ datos }) {
                 }}>
                   {shortLabel(rowC.label)}
                 </td>
-                {matrix[ri].map((r, ci) => (
-                  <td
-                    key={ci}
-                    title={`${rowC.label} × ${HEATMAP_CAMPOS[ci].label}: r=${isNaN(r) ? '—' : r.toFixed(3)}`}
-                    style={{
-                      width: CELL, height: CELL,
-                      background: corColor(r),
-                      textAlign: 'center',
-                      color: Math.abs(r) > 0.5 ? 'white' : 'rgba(255,255,255,0.4)',
-                      fontSize: 8,
-                      cursor: 'default',
-                      border: '1px solid rgba(255,255,255,0.04)',
-                    }}
-                  >
-                    {isNaN(r) ? '—' : r.toFixed(2)}
-                  </td>
-                ))}
+                {matrix[ri].map((r, ci) => {
+                  const isSel = selectedCell && selectedCell[0] === ri && selectedCell[1] === ci
+                  return (
+                    <td
+                      key={ci}
+                      title={`${rowC.label} × ${HEATMAP_CAMPOS[ci].label}: r=${isNaN(r) ? '—' : r.toFixed(3)}${ri !== ci ? '\nClic: filtrar municipios con valor alto en ambas variables' : ''}`}
+                      onClick={() => handleCellClick(ri, ci)}
+                      style={{
+                        width: CELL, height: CELL,
+                        background: corColor(r),
+                        textAlign: 'center',
+                        color: Math.abs(r) > 0.5 ? 'white' : 'rgba(255,255,255,0.4)',
+                        fontSize: 8,
+                        cursor: ri !== ci ? 'pointer' : 'default',
+                        border: isSel ? '2px solid #e879f9' : '1px solid rgba(255,255,255,0.04)',
+                        outline: isSel ? '1px solid #e879f950' : 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {isNaN(r) ? '—' : r.toFixed(2)}
+                    </td>
+                  )
+                })}
               </tr>
             ))}
           </tbody>
@@ -421,7 +562,9 @@ export default function PanelInferior({
   riesgoActivo,
   departamentoFiltro,
   municipioSeleccionado,
+  panelSelection,
   onSelectMunicipio,
+  onPanelSelection,
 }) {
   const [collapsed, setCollapsed] = useState(true)
   const [tab, setTab] = useState('scatter')
@@ -524,13 +667,22 @@ export default function PanelInferior({
               municipioSeleccionado={municipioSeleccionado}
               onSelectMunicipio={onSelectMunicipio}
               departamentoFiltro={departamentoFiltro}
+              panelSelection={panelSelection}
+              onPanelSelection={onPanelSelection}
             />
           )}
           {tab === 'boxplot' && (
-            <TabBoxPlot datos={datos} />
+            <TabBoxPlot
+              datos={datos}
+              panelSelection={panelSelection}
+              onPanelSelection={onPanelSelection}
+            />
           )}
           {tab === 'correlacion' && (
-            <TabCorrelacion datos={datos} />
+            <TabCorrelacion
+              datos={datos}
+              onPanelSelection={onPanelSelection}
+            />
           )}
         </div>
       )}
