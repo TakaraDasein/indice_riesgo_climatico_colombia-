@@ -1,0 +1,309 @@
+/* ── Reset y base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sidebar-w: 300px;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #334155;
+  --border: #475569;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --riesgo-sin: #d1d5db;
+  --riesgo-bajo: #86efac;
+  --riesgo-medio: #fde047;
+  --riesgo-alto: #fb923c;
+  --riesgo-muy-alto: #dc2626;
+  --radius: 8px;
+  --trans: 0.2s ease;
+}
+
+html, body { height: 100%; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+/* ── Layout principal ── */
+body { display: flex; }
+
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width var(--trans), min-width var(--trans);
+  z-index: 1000;
+}
+
+#sidebar.collapsed {
+  width: 0;
+  min-width: 0;
+  border-right: none;
+}
+
+#map-container { flex: 1; position: relative; }
+#map { width: 100%; height: 100%; }
+
+/* ── Sidebar header ── */
+#sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#logo-block { display: flex; align-items: center; gap: 10px; }
+#logo-icon { font-size: 28px; }
+#logo-block h1 { font-size: 14px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+#subtitle { font-size: 11px; color: var(--text-muted); }
+
+#toggle-sidebar, #show-sidebar {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--trans);
+}
+#toggle-sidebar:hover, #show-sidebar:hover { background: var(--surface2); color: var(--accent); }
+
+#show-sidebar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2000;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+}
+
+/* ── Secciones ── */
+.section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.section-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* ── Tabs de riesgo ── */
+#riesgo-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+
+.riesgo-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  padding: 8px 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  transition: all var(--trans);
+}
+.riesgo-btn:hover { border-color: var(--accent); color: var(--text); }
+.riesgo-btn.active { background: var(--accent); border-color: var(--accent); color: #0f172a; font-weight: 700; }
+.riesgo-icon { font-size: 16px; }
+
+/* ── Select departamento ── */
+#filtro-dpto {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+#filtro-dpto:focus { border-color: var(--accent); }
+
+/* ── Leyenda ── */
+#leyenda { display: flex; flex-direction: column; gap: 6px; }
+.leyenda-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+.leyenda-color { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── Stats ── */
+#stats-content { display: flex; flex-direction: column; gap: 8px; }
+.stat-item { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.stat-label { color: var(--text-muted); }
+.stat-val { font-weight: 700; color: var(--text); }
+.stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-sin { background: #374151; color: #9ca3af; }
+.badge-bajo { background: #166534; color: #86efac; }
+.badge-medio { background: #713f12; color: #fde047; }
+.badge-alto { background: #7c2d12; color: #fb923c; }
+.badge-muy-alto { background: #450a0a; color: #dc2626; }
+.stat-loading { color: var(--text-muted); font-size: 12px; font-style: italic; }
+
+/* ── Top municipios ── */
+#top-municipios-list { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow-y: auto; }
+.top-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--trans);
+  font-size: 12px;
+}
+.top-item:hover { background: var(--surface2); }
+.top-rank { font-size: 10px; color: var(--text-muted); width: 16px; flex-shrink: 0; text-align: right; }
+.top-nombre { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-dpto { color: var(--text-muted); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+.top-count { font-weight: 700; color: var(--accent); flex-shrink: 0; }
+
+/* ── Creditos ── */
+#creditos { padding: 12px 16px; margin-top: auto; }
+#creditos p { font-size: 10px; color: var(--border); }
+
+/* ── Ficha municipio ── */
+#ficha {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 320px;
+  max-height: calc(100vh - 24px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-y: auto;
+  z-index: 2000;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  transition: opacity var(--trans), transform var(--trans);
+}
+
+#ficha.hidden { opacity: 0; pointer-events: none; transform: translateX(20px); }
+#ficha:not(.hidden) { opacity: 1; transform: translateX(0); }
+
+#ficha-close {
+  position: sticky;
+  top: 8px;
+  float: right;
+  margin: 8px 8px 0 0;
+  background: var(--surface2);
+  border: none;
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+#ficha-close:hover { color: var(--text); }
+
+#ficha-content { padding: 16px; clear: both; }
+
+.ficha-muni-nombre { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+.ficha-dpto { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+
+.ficha-riesgo-principal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.ficha-riesgo-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.ficha-riesgo-valor { font-size: 28px; font-weight: 900; }
+.ficha-riesgo-nivel { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+
+.ficha-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ficha-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ficha-card-icon { font-size: 20px; }
+.ficha-card-label { font-size: 10px; color: var(--text-muted); }
+.ficha-card-valor { font-size: 15px; font-weight: 800; }
+.ficha-card-nivel { font-size: 10px; font-weight: 600; }
+
+.ficha-barra-titulo { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; letter-spacing: 0.05em; }
+
+.barra-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.barra-label { font-size: 11px; color: var(--text-muted); width: 85px; flex-shrink: 0; }
+.barra-track { flex: 1; background: var(--bg); border-radius: 999px; height: 6px; overflow: hidden; }
+.barra-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+.barra-valor { font-size: 10px; color: var(--text-muted); width: 28px; text-align: right; flex-shrink: 0; }
+
+.ficha-fuente { font-size: 10px; color: var(--border); margin-top: 12px; }
+
+/* ── Leaflet overrides ── */
+.leaflet-container { background: #1e293b !important; }
+.leaflet-control-attribution { display: none !important; }
+
+.leaflet-popup-content-wrapper {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.leaflet-popup-tip { background: var(--surface); }
+.leaflet-popup-content { margin: 10px 14px; font-size: 13px; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  #sidebar { width: 100%; min-width: 100%; position: absolute; height: 50vh; bottom: 0; left: 0; border-right: none; border-top: 1px solid var(--border); z-index: 1000; }
+  #sidebar.collapsed { height: 0; }
+  #map-container { width: 100%; }
+  #ficha { width: calc(100vw - 24px); right: 12px; }
+}
+
+.hidden { display: none !important; }

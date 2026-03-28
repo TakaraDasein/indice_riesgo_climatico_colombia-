@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Riesgos Climáticos Colombia | 1122 Municipios</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet Search -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-search@3.0.9/dist/leaflet-search.min.css"/>
+  <script src="https://unpkg.com/leaflet-search@3.0.9/dist/leaflet-search.min.js"></script>
+
+  <link rel="stylesheet" href="/static/css/main.css"/>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside id="sidebar">
+  <div id="sidebar-header">
+    <div id="logo-block">
+      <span id="logo-icon">🌍</span>
+      <div>
+        <h1>Riesgos Climáticos</h1>
+        <span id="subtitle">Colombia · 1122 Municipios</span>
+      </div>
+    </div>
+    <button id="toggle-sidebar" title="Ocultar panel">‹</button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="section">
+    <label class="section-label">TIPO DE RIESGO</label>
+    <div id="riesgo-tabs">
+      <button class="riesgo-btn active" data-riesgo="riesgo_compuesto" title="Riesgo compuesto">
+        <span class="riesgo-icon">⚡</span><span>Compuesto</span>
+      </button>
+      <button class="riesgo-btn" data-riesgo="inundacion" title="Inundaciones">
+        <span class="riesgo-icon">🌊</span><span>Inundación</span>
+      </button>
+      <button class="riesgo-btn" data-riesgo="deslizamiento" title="Deslizamientos">
+        <span class="riesgo-icon">⛰️</span><span>Deslizamiento</span>
+      </button>
+      <button class="riesgo-btn" data-riesgo="incendio" title="Incendios forestales">
+        <span class="riesgo-icon">🔥</span><span>Incendio</span>
+      </button>
+      <button class="riesgo-btn" data-riesgo="sequia" title="Sequías">
+        <span class="riesgo-icon">☀️</span><span>Sequía</span>
+      </button>
+      <button class="riesgo-btn" data-riesgo="evento_extremo" title="Eventos extremos">
+        <span class="riesgo-icon">🌪️</span><span>Extremo</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtro departamento -->
+  <div class="section">
+    <label class="section-label">DEPARTAMENTO</label>
+    <select id="filtro-dpto">
+      <option value="">Todos los departamentos</option>
+    </select>
+  </div>
+
+  <!-- Leyenda -->
+  <div class="section">
+    <label class="section-label">NIVEL DE RIESGO</label>
+    <div id="leyenda">
+      <div class="leyenda-item"><span class="leyenda-color" style="background:#d1d5db"></span>Sin datos</div>
+      <div class="leyenda-item"><span class="leyenda-color" style="background:#86efac"></span>Bajo</div>
+      <div class="leyenda-item"><span class="leyenda-color" style="background:#fde047"></span>Medio</div>
+      <div class="leyenda-item"><span class="leyenda-color" style="background:#fb923c"></span>Alto</div>
+      <div class="leyenda-item"><span class="leyenda-color" style="background:#dc2626"></span>Muy Alto</div>
+    </div>
+  </div>
+
+  <!-- Stats globales -->
+  <div class="section" id="stats-section">
+    <label class="section-label">ESTADÍSTICAS GENERALES</label>
+    <div id="stats-content">
+      <div class="stat-loading">Cargando datos...</div>
+    </div>
+  </div>
+
+  <!-- Top municipios -->
+  <div class="section">
+    <label class="section-label">TOP 10 MUNICIPIOS (eventos)</label>
+    <div id="top-municipios-list"></div>
+  </div>
+
+  <!-- Creditos -->
+  <div id="creditos">
+    <p>Fuentes: UNGRD · DANE · IDEAM · OCHA/HDX</p>
+    <p>Datos: eventos 2019–2026</p>
+  </div>
+</aside>
+
+<!-- ── MAPA ── -->
+<main id="map-container">
+  <div id="map"></div>
+
+  <!-- Ficha municipio (panel derecho emergente) -->
+  <div id="ficha" class="hidden">
+    <button id="ficha-close">✕</button>
+    <div id="ficha-content"></div>
+  </div>
+
+  <!-- Badge sidebar colapsado -->
+  <button id="show-sidebar" class="hidden" title="Mostrar panel">›</button>
+</main>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>
