@@ -3,6 +3,8 @@ import Sidebar from './components/Sidebar'
 import MapaD3 from './components/MapaD3'
 import FichaMunicipio from './components/FichaMunicipio'
 import DocumentacionModal from './components/DocumentacionModal'
+import FiltrosActivos from './components/FiltrosActivos'
+import PanelInferior from './components/PanelInferior'
 import { useMapData } from './hooks/useMapData'
 
 const INITIAL_FILTROS = {
@@ -17,6 +19,7 @@ export default function App() {
   const [filtros, setFiltros] = useState(INITIAL_FILTROS)
   const [departamentoFiltro, setDepartamentoFiltro] = useState('')
   const [municipioSeleccionado, setMunicipioSeleccionado] = useState(null)
+  const [municipiosComparar, setMunicipiosComparar] = useState([])
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [docOpen, setDocOpen] = useState(false)
 
@@ -44,6 +47,43 @@ export default function App() {
 
   const handleCloseFicha = useCallback(() => {
     setMunicipioSeleccionado(null)
+  }, [])
+
+  // ── Callbacks de eliminación de filtros individuales ──────
+  const handleRemoveNivel = useCallback((nivel) => {
+    setFiltros(f => ({
+      ...f,
+      niveles: (f.niveles || []).filter(n => n !== nivel),
+    }))
+  }, [])
+
+  const handleRemoveRango = useCallback(() => {
+    setFiltros(f => ({ ...f, rango: [0, 5] }))
+  }, [])
+
+  const handleRemoveDepartamento = useCallback(() => {
+    setDepartamentoFiltro('')
+  }, [])
+
+  const handleClearAllFiltros = useCallback(() => {
+    setFiltros({ rango: [0, 5], niveles: [] })
+    setDepartamentoFiltro('')
+  }, [])
+
+  // ── Callbacks de comparación de municipios ────────────────
+  const handleToggleComparar = useCallback((municipio) => {
+    if (!municipio) return
+    setMunicipiosComparar(prev => {
+      const cod = String(municipio.cod_municipio)
+      const already = prev.find(m => String(m.cod_municipio) === cod)
+      if (already) return prev.filter(m => String(m.cod_municipio) !== cod)
+      if (prev.length >= 3) return prev  // máx 3
+      return [...prev, municipio]
+    })
+  }, [])
+
+  const handleClearComparar = useCallback(() => {
+    setMunicipiosComparar([])
   }, [])
 
   // ── Render: cargando ──────────────────────────────────────
@@ -165,59 +205,88 @@ export default function App() {
         onToggleCollapse={() => setSidebarCollapsed(c => !c)}
       />
 
-      {/* Área principal del mapa */}
-      <main className="map-area">
-        {geojson ? (
-          <MapaD3
+      {/* Columna central: mapa + panel inferior */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', minWidth: 0, overflow: 'hidden' }}>
+
+        {/* Área principal del mapa */}
+        <main className="map-area" style={{ flex: 1, height: 'auto' }}>
+          {geojson ? (
+            <MapaD3
+              geojson={geojson}
+              riesgoActivo={riesgoActivo}
+              mapMode={mapMode}
+              filtros={filtros}
+              municipioSeleccionado={municipioSeleccionado}
+              departamentoFiltro={departamentoFiltro}
+              onSelectMunicipio={handleSelectMunicipio}
+            />
+          ) : (
+            <div className="map-loading">
+              <div className="map-loading-spinner" />
+              <p className="map-loading-text">Preparando mapa...</p>
+            </div>
+          )}
+
+          {/* Chips de filtros activos + contador municipios */}
+          {geojson && (
+            <FiltrosActivos
+              filtros={filtros}
+              departamentoFiltro={departamentoFiltro}
+              riesgoActivo={riesgoActivo}
+              geojson={geojson}
+              onRemoveNivel={handleRemoveNivel}
+              onRemoveRango={handleRemoveRango}
+              onRemoveDepartamento={handleRemoveDepartamento}
+              onClearAll={handleClearAllFiltros}
+            />
+          )}
+
+          {/* Hint inicial */}
+          {!municipioSeleccionado && geojson && (
+            <div className="map-empty-hint">
+              <span className="map-empty-hint-icon">👆</span>
+              Haz clic en un municipio para ver su ficha de riesgos
+            </div>
+          )}
+
+          {/* Botón documentación */}
+          <button
+            onClick={() => setDocOpen(true)}
+            title="Acerca del índice y metodología"
+            style={{
+              position: 'absolute', bottom: 16, left: 16,
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              padding: '6px 12px',
+              display: 'flex', alignItems: 'center', gap: 6,
+              cursor: 'pointer',
+              fontSize: 11, fontWeight: 600,
+              color: 'var(--text-secondary)',
+              fontFamily: 'var(--font-sans)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              zIndex: 10,
+              transition: 'border-color 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#e879f9'; e.currentTarget.style.color = '#e879f9' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          >
+            <span style={{ fontSize: 13 }}>🔺</span>
+            Metodología e Índices
+          </button>
+        </main>
+
+        {/* Panel de análisis inferior */}
+        {geojson && (
+          <PanelInferior
             geojson={geojson}
             riesgoActivo={riesgoActivo}
-            mapMode={mapMode}
-            filtros={filtros}
-            municipioSeleccionado={municipioSeleccionado}
             departamentoFiltro={departamentoFiltro}
+            municipioSeleccionado={municipioSeleccionado}
             onSelectMunicipio={handleSelectMunicipio}
           />
-        ) : (
-          <div className="map-loading">
-            <div className="map-loading-spinner" />
-            <p className="map-loading-text">Preparando mapa...</p>
-          </div>
         )}
-
-        {/* Hint inicial */}
-        {!municipioSeleccionado && geojson && (
-          <div className="map-empty-hint">
-            <span className="map-empty-hint-icon">👆</span>
-            Haz clic en un municipio para ver su ficha de riesgos
-          </div>
-        )}
-
-        {/* Botón documentación */}
-        <button
-          onClick={() => setDocOpen(true)}
-          title="Acerca del índice y metodología"
-          style={{
-            position: 'absolute', bottom: 16, left: 16,
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            padding: '6px 12px',
-            display: 'flex', alignItems: 'center', gap: 6,
-            cursor: 'pointer',
-            fontSize: 11, fontWeight: 600,
-            color: 'var(--text-secondary)',
-            fontFamily: 'var(--font-sans)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-            zIndex: 10,
-            transition: 'border-color 0.15s, color 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#e879f9'; e.currentTarget.style.color = '#e879f9' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-        >
-          <span style={{ fontSize: 13 }}>🔺</span>
-          Metodología e Índices
-        </button>
-      </main>
+      </div>
 
       {/* Panel derecho - Ficha municipio */}
       <FichaMunicipio
@@ -225,6 +294,9 @@ export default function App() {
         onClose={handleCloseFicha}
         riesgoActivo={riesgoActivo}
         geojson={geojson}
+        municipiosComparar={municipiosComparar}
+        onToggleComparar={handleToggleComparar}
+        onClearComparar={handleClearComparar}
       />
 
       {/* Modal de documentación */}

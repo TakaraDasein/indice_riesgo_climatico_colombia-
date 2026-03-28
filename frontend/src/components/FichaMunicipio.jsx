@@ -6,6 +6,7 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, ResponsiveContainer, Tooltip as RechartsTooltip,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  ReferenceLine,
 } from 'recharts'
 import {
   TIPOS_RIESGO, NIVEL_COLORS, NIVEL_BG, NIVEL_TEXT_COLORS,
@@ -39,6 +40,9 @@ export default function FichaMunicipio({
   onClose,
   riesgoActivo,
   geojson,
+  municipiosComparar = [],
+  onToggleComparar,
+  onClearComparar,
 }) {
   const [tabActivo, setTabActivo] = useState('riesgo_compuesto')
   const [serieTemporal, setSerieTemporal] = useState([])
@@ -53,6 +57,22 @@ export default function FichaMunicipio({
       .then(data => setSerieTemporal(data))
       .catch(() => setSerieTemporal([]))
   }, [municipio?.cod_municipio])
+
+  // Calcular promedio anual de eventos del departamento (referencia)
+  const deptAvgAnual = useMemo(() => {
+    if (!municipio || !geojson) return null
+    const dept = municipio.departamento
+    const deptoMusnis = geojson.features.filter(
+      f => f.properties?.departamento === dept
+    )
+    if (deptoMusnis.length === 0) return null
+    const totalSum = deptoMusnis.reduce(
+      (acc, f) => acc + Number(f.properties?.total_eventos || 0), 0
+    )
+    // total_eventos cubre ~7 años (2019-2026 con datos disponibles)
+    const YEARS = 7
+    return (totalSum / deptoMusnis.length) / YEARS
+  }, [municipio, geojson])
 
   // Calcular ranking dentro del departamento
   const rankingDept = useMemo(() => {
@@ -97,6 +117,39 @@ export default function FichaMunicipio({
       .sort((a, b) => b.value - a.value)
   }, [municipio])
 
+  // ── Comparación multi-municipio ───────────────────────────
+  const COMPARE_COLORS = ['#22d3ee', '#f59e0b', '#a78bfa', '#34d399']
+
+  const isInComparar = municipio
+    ? municipiosComparar.some(m => String(m.cod_municipio) === String(municipio.cod_municipio))
+    : false
+
+  const canAddComparar = !isInComparar && municipiosComparar.length < 3
+
+  // Lista de municipios en el panel de comparación (actual + fijados)
+  const compareMusnisAll = useMemo(() => {
+    if (!municipio) return municipiosComparar
+    return [municipio, ...municipiosComparar.filter(
+      m => String(m.cod_municipio) !== String(municipio.cod_municipio)
+    )]
+  }, [municipio, municipiosComparar])
+
+  // Datos radar multi-municipio
+  const multiRadarData = useMemo(() => {
+    if (compareMusnisAll.length < 2) return null
+    return Object.entries(TIPOS_RIESGO).map(([key, info]) => {
+      const row = {
+        subject: info.label.replace('Riesgo ', '').replace(' Compuesto', ' Comp.'),
+        fullMark: 5,
+      }
+      compareMusnisAll.forEach((m, i) => {
+        row[`v${i}`] = Number(m[info.field] || 0)
+        row[`name${i}`] = m.municipio
+      })
+      return row
+    })
+  }, [compareMusnisAll])
+
   // Indicadores detallados del tab activo
   const tabInfo = TIPOS_RIESGO[tabActivo]
   const tabIdx = municipio ? Number(municipio[tabInfo?.field] || 0) : 0
@@ -127,6 +180,28 @@ export default function FichaMunicipio({
                   DIVIPOLA: {String(municipio.cod_municipio).padStart(5, '0')}
                 </span>
               )}
+              {/* Botón comparar */}
+              <button
+                onClick={() => onToggleComparar && onToggleComparar(municipio)}
+                title={isInComparar ? 'Quitar de comparación' : canAddComparar ? 'Añadir a comparación (máx. 3)' : 'Ya hay 3 municipios en comparación'}
+                style={{
+                  marginLeft: 'auto',
+                  padding: '2px 8px',
+                  background: isInComparar ? 'rgba(34,211,238,0.15)' : 'var(--bg-elevated)',
+                  border: `1px solid ${isInComparar ? '#22d3ee' : 'var(--border)'}`,
+                  borderRadius: 12,
+                  color: isInComparar ? '#22d3ee' : canAddComparar ? 'var(--text-secondary)' : 'var(--text-disabled)',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: canAddComparar || isInComparar ? 'pointer' : 'not-allowed',
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  fontFamily: 'var(--font-sans)',
+                  flexShrink: 0,
+                  transition: 'all 0.15s',
+                }}
+              >
+                {isInComparar ? '✓ Comparando' : '+ Comparar'}
+              </button>
             </div>
           </div>
 
@@ -263,6 +338,79 @@ export default function FichaMunicipio({
                         dot={{ fill: 'var(--accent-cyan)', r: 3, strokeWidth: 0 }}
                       />
                       <RechartsTooltip content={<CustomTooltip />} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {/* ── Radar multi-municipio (comparación) ── */}
+            {multiRadarData && (
+              <div>
+                <div className="section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>Comparación de Perfiles</span>
+                  <button
+                    onClick={() => onClearComparar && onClearComparar()}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-sans)',
+                      padding: 0,
+                    }}
+                  >
+                    Limpiar
+                  </button>
+                </div>
+                {/* Leyenda de colores */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
+                  {compareMusnisAll.map((m, i) => (
+                    <span
+                      key={m.cod_municipio}
+                      style={{
+                        fontSize: 10, display: 'flex', alignItems: 'center', gap: 4,
+                        color: COMPARE_COLORS[i],
+                      }}
+                    >
+                      <span style={{
+                        width: 8, height: 8, borderRadius: '50%',
+                        background: COMPARE_COLORS[i], flexShrink: 0,
+                        display: 'inline-block',
+                      }} />
+                      {m.municipio}
+                    </span>
+                  ))}
+                </div>
+                <div className="chart-wrapper">
+                  <ResponsiveContainer width="100%" height={230}>
+                    <RadarChart data={multiRadarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
+                      <PolarGrid stroke="rgba(255,255,255,0.08)" gridType="circle" />
+                      <PolarAngleAxis
+                        dataKey="subject"
+                        tick={{ fill: 'var(--text-muted)', fontSize: 9, fontFamily: 'Inter, sans-serif' }}
+                        stroke="rgba(255,255,255,0.1)"
+                      />
+                      <PolarRadiusAxis
+                        angle={30} domain={[0, 5]}
+                        tick={{ fill: 'var(--text-disabled)', fontSize: 8 }}
+                        stroke="rgba(255,255,255,0.05)"
+                        tickCount={4}
+                      />
+                      {compareMusnisAll.map((m, i) => (
+                        <Radar
+                          key={m.cod_municipio}
+                          name={m.municipio}
+                          dataKey={`v${i}`}
+                          stroke={COMPARE_COLORS[i]}
+                          fill={COMPARE_COLORS[i]}
+                          fillOpacity={0.12}
+                          strokeWidth={i === 0 ? 2 : 1.5}
+                          dot={{ fill: COMPARE_COLORS[i], r: 2.5, strokeWidth: 0 }}
+                        />
+                      ))}
+                      <RechartsTooltip content={<CustomTooltip />} />
+                      <Legend
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: 9, color: 'var(--text-muted)', paddingTop: 4 }}
+                      />
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
@@ -447,7 +595,14 @@ export default function FichaMunicipio({
             {/* Serie temporal */}
             {serieTemporal.length > 0 && (
               <div>
-                <div className="section-title">Eventos por Año</div>
+                <div className="section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>Eventos por Año</span>
+                  {deptAvgAnual !== null && (
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 400 }}>
+                      — — prom. depto.: {deptAvgAnual.toFixed(1)}/año
+                    </span>
+                  )}
+                </div>
                 <div className="chart-wrapper">
                   <ResponsiveContainer width="100%" height={180}>
                     <LineChart data={serieTemporal} margin={{ top: 6, right: 12, bottom: 0, left: -20 }}>
@@ -463,6 +618,21 @@ export default function FichaMunicipio({
                         allowDecimals={false}
                       />
                       <RechartsTooltip content={<CustomTooltip />} />
+                      {/* Banda de referencia departamental */}
+                      {deptAvgAnual !== null && (
+                        <ReferenceLine
+                          y={deptAvgAnual}
+                          stroke="rgba(255,255,255,0.30)"
+                          strokeDasharray="5 4"
+                          strokeWidth={1.2}
+                          label={{
+                            value: `Prom. ${municipio?.departamento?.split(' ')[0] ?? 'Depto.'}`,
+                            fill: 'rgba(255,255,255,0.4)',
+                            fontSize: 9,
+                            position: 'insideTopRight',
+                          }}
+                        />
+                      )}
                       <Line type="monotone" dataKey="inundacion" stroke="#3b82f6" strokeWidth={1.5} dot={false} name="Inundación" />
                       <Line type="monotone" dataKey="deslizamiento" stroke="#f59e0b" strokeWidth={1.5} dot={false} name="Deslizamiento" />
                       <Line type="monotone" dataKey="incendio" stroke="#ef4444" strokeWidth={1.5} dot={false} name="Incendio" />
