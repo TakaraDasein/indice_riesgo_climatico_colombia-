@@ -48,7 +48,7 @@ export default function FichaMunicipio({
   useEffect(() => {
     if (!municipio?.cod_municipio) { setSerieTemporal([]); return }
     const cod = String(municipio.cod_municipio).padStart(5, '0')
-    fetch(`/api/municipio/${cod}/serie-temporal`)
+    fetch(`/data/series/${cod}.json`)
       .then(r => r.json())
       .then(data => setSerieTemporal(data))
       .catch(() => setSerieTemporal([]))

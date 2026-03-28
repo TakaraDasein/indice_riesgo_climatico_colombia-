@@ -16,9 +16,9 @@ export function useMapData() {
 
     try {
       const [geoRes, statsRes, deptoRes] = await Promise.all([
-        fetch('/api/municipios'),
-        fetch('/api/stats'),
-        fetch('/api/departamentos'),
+        fetch('/data/municipios.geojson'),
+        fetch('/data/stats.json'),
+        fetch('/data/departamentos.json'),
       ])
 
       if (!geoRes.ok) throw new Error(`GeoJSON: ${geoRes.status} ${geoRes.statusText}`)
