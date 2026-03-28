@@ -1,15 +1,18 @@
 import { useState } from 'react'
-import { X, ChevronDown, ChevronRight } from 'lucide-react'
+import {
+  X, ChevronDown, ChevronRight,
+  Zap, Users, Thermometer, Ruler, Database, HelpCircle, Settings, Triangle,
+} from 'lucide-react'
 
 // ── Datos de la documentación ────────────────────────────────────────────────
 
 const DIMENSIONES = [
   {
     id: 'amenaza',
-    emoji: '⚡',
+    Icon: Zap,
     titulo: 'Dimensión 1 — Amenaza Física',
     peso: '55%',
-    color: '#3b82f6',
+    color: '#9c9483',   // olive gray — riesgo compuesto Medio
     fuente: 'UNGRD (Unidad Nacional para la Gestión del Riesgo de Desastres)',
     descripcion: 'Captura la frecuencia histórica de eventos de emergencia registrados por la UNGRD entre 2019 y 2026. A mayor número de eventos pasados, mayor exposición estructural del territorio.',
     indicadores: [
@@ -22,10 +25,10 @@ const DIMENSIONES = [
   },
   {
     id: 'vulnerabilidad',
-    emoji: '👥',
+    Icon: Users,
     titulo: 'Dimensión 2 — Vulnerabilidad Socioeconómica',
     peso: '30%',
-    color: '#f59e0b',
+    color: '#808070',   // cool olive — ipm Medio
     fuente: 'DANE — Índice de Pobreza Multidimensional Censal 2018',
     descripcion: 'El IPM mide la privación simultánea en cinco dimensiones del hogar: condiciones educativas, condiciones de la niñez, trabajo, salud y acceso a servicios. Un municipio más pobre tiene menor capacidad de anticiparse, resistir y recuperarse de un evento climático.',
     indicadores: [
@@ -35,10 +38,10 @@ const DIMENSIONES = [
   },
   {
     id: 'termico',
-    emoji: '🌡️',
+    Icon: Thermometer,
     titulo: 'Dimensión 3 — Estrés Térmico',
     peso: '15%',
-    color: '#ef4444',
+    color: '#c07040',   // amber-rose — temperatura Medio
     fuente: 'IDEAM — Normales Climatológicas de Colombia (dataset nsz2-kzcq)',
     descripcion: 'Temperatura media anual por estación meteorológica. Municipios de tierras bajas y caribe colombiano con temperaturas superiores a 27 °C enfrentan mayor riesgo por olas de calor, estrés hídrico e impacto en salud pública.',
     indicadores: [
@@ -84,7 +87,7 @@ const FLUJO = [
 
 // ── Subcomponentes ────────────────────────────────────────────────────────────
 
-function Collapsible({ title, emoji, children, defaultOpen = false, accentColor }) {
+function Collapsible({ title, Icon: IconComp, children, defaultOpen = false, accentColor }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
     <div style={{
@@ -107,7 +110,7 @@ function Collapsible({ title, emoji, children, defaultOpen = false, accentColor 
           textAlign: 'left',
         }}
       >
-        <span style={{ fontSize: 16 }}>{emoji}</span>
+        {IconComp && <IconComp size={15} strokeWidth={1.5} color={open ? accentColor : 'var(--text-muted)'} />}
         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: open ? accentColor : 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
           {title}
         </span>
@@ -181,11 +184,12 @@ export default function DocumentacionModal({ open, onClose }) {
         }}>
           <div style={{
             width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-            background: 'linear-gradient(135deg, #e879f922, #3b82f622)',
-            border: '1px solid #e879f944',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18,
-          }}>🔺</div>
+          }}>
+            <Triangle size={18} strokeWidth={1.5} color="var(--text-secondary)" />
+          </div>
           <div style={{ flex: 1 }}>
             <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
               Índice de Riesgo Climático Triangulado
@@ -212,10 +216,10 @@ export default function DocumentacionModal({ open, onClose }) {
           flexShrink: 0, overflowX: 'auto',
         }}>
           {[
-            { id: 'metodologia', label: 'Metodología', emoji: '📐' },
-            { id: 'fuentes',     label: 'Fuentes',     emoji: '🗄️' },
-            { id: 'faq',         label: 'Preguntas',   emoji: '❓' },
-            { id: 'tecnico',     label: 'Técnico',     emoji: '⚙️' },
+            { id: 'metodologia', label: 'Metodología', Icon: Ruler },
+            { id: 'fuentes',     label: 'Fuentes',     Icon: Database },
+            { id: 'faq',         label: 'Preguntas',   Icon: HelpCircle },
+            { id: 'tecnico',     label: 'Técnico',     Icon: Settings },
           ].map(tab => (
             <button
               key={tab.id}
@@ -224,15 +228,15 @@ export default function DocumentacionModal({ open, onClose }) {
                 padding: '9px 16px',
                 background: 'none',
                 border: 'none',
-                borderBottom: seccion === tab.id ? '2px solid #e879f9' : '2px solid transparent',
-                color: seccion === tab.id ? '#e879f9' : 'var(--text-muted)',
+                borderBottom: seccion === tab.id ? '2px solid var(--selected-indicator)' : '2px solid transparent',
+                color: seccion === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 5,
                 fontFamily: 'var(--font-sans)',
                 whiteSpace: 'nowrap',
               }}
             >
-              <span>{tab.emoji}</span>{tab.label}
+              <tab.Icon size={13} strokeWidth={1.5} />{tab.label}
             </button>
           ))}
         </div>
@@ -246,20 +250,20 @@ export default function DocumentacionModal({ open, onClose }) {
               {/* Fórmula */}
               <div style={{
                 background: 'var(--bg-elevated)',
-                border: '1px solid #e879f944',
+                border: '1px solid var(--border)',
                 borderRadius: 10, padding: '14px 16px',
               }}>
-                <div style={{ fontSize: 11, color: '#e879f9', fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>
                   FÓRMULA DEL ÍNDICE TRIANGULADO
                 </div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-primary)', lineHeight: 2 }}>
-                  <span style={{ color: '#e879f9' }}>idx_triangulado</span> =<br />
-                  &nbsp;&nbsp;<span style={{ color: '#3b82f6' }}>idx_inundacion</span>    × <strong>0.20</strong> ─┐<br />
-                  &nbsp;&nbsp;<span style={{ color: '#3b82f6' }}>idx_deslizamiento</span> × <strong>0.20</strong> &nbsp;├─ Amenaza UNGRD (<strong>55%</strong>)<br />
-                  &nbsp;&nbsp;<span style={{ color: '#3b82f6' }}>idx_incendio</span>      × <strong>0.10</strong> &nbsp;│<br />
-                  &nbsp;&nbsp;<span style={{ color: '#3b82f6' }}>idx_evento_extremo</span>× <strong>0.05</strong> ─┘<br />
-                  &nbsp;&nbsp;<span style={{ color: '#f59e0b' }}>idx_ipm</span>           × <strong>0.30</strong> ── Vulnerabilidad DANE (<strong>30%</strong>)<br />
-                  &nbsp;&nbsp;<span style={{ color: '#ef4444' }}>idx_temperatura</span>   × <strong>0.15</strong> ── Estrés Térmico IDEAM (<strong>15%</strong>)
+                  <span style={{ color: '#b4a070' }}>idx_triangulado</span> =<br />
+                  &nbsp;&nbsp;<span style={{ color: '#9cac8b' }}>idx_inundacion</span>    × <strong>0.20</strong> ─┐<br />
+                  &nbsp;&nbsp;<span style={{ color: '#9cac8b' }}>idx_deslizamiento</span> × <strong>0.20</strong> &nbsp;├─ Amenaza UNGRD (<strong>55%</strong>)<br />
+                  &nbsp;&nbsp;<span style={{ color: '#9cac8b' }}>idx_incendio</span>      × <strong>0.10</strong> &nbsp;│<br />
+                  &nbsp;&nbsp;<span style={{ color: '#9cac8b' }}>idx_evento_extremo</span>× <strong>0.05</strong> ─┘<br />
+                  &nbsp;&nbsp;<span style={{ color: '#808070' }}>idx_ipm</span>           × <strong>0.30</strong> ── Vulnerabilidad DANE (<strong>30%</strong>)<br />
+                  &nbsp;&nbsp;<span style={{ color: '#eebd7b' }}>idx_temperatura</span>   × <strong>0.15</strong> ── Estrés Térmico IDEAM (<strong>15%</strong>)
                 </div>
                 <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-muted)' }}>
                   Todos los índices en escala <strong style={{ color: 'var(--text-secondary)' }}>0 – 5</strong>.
@@ -301,7 +305,7 @@ export default function DocumentacionModal({ open, onClose }) {
                 {DIMENSIONES.map(dim => (
                   <Collapsible
                     key={dim.id}
-                    emoji={dim.emoji}
+                    Icon={dim.Icon}
                     title={`${dim.titulo} — peso ${dim.peso}`}
                     accentColor={dim.color}
                     defaultOpen={dim.id === 'amenaza'}
@@ -350,8 +354,8 @@ export default function DocumentacionModal({ open, onClose }) {
                   id: 'wwkg-r6te',
                   cobertura: '22.945 eventos 2019–2026',
                   variables: 'Tipo de evento, DIVIPOLA, municipio, departamento, fecha',
-                  color: '#3b82f6',
-                  emoji: '⚡',
+                  color: '#9c9483',
+                  Icon: Zap,
                   limitacion: 'Solo registra eventos reportados al sistema. Municipios sin reporte pueden tener exposición real no capturada.',
                 },
                 {
@@ -361,8 +365,8 @@ export default function DocumentacionModal({ open, onClose }) {
                   id: 'Hoja: 4_IPM Mpio dominios',
                   cobertura: '1122 municipios (43 con datos suprimidos)',
                   variables: 'DIVIPOLA, IPM Total, IPM Cabecera, IPM Rural',
-                  color: '#f59e0b',
-                  emoji: '👥',
+                  color: '#808070',
+                  Icon: Users,
                   limitacion: 'Dato puntual del Censo 2018 — no refleja cambios por ETCR, pandemia ni inversión posterior.',
                 },
                 {
@@ -372,8 +376,8 @@ export default function DocumentacionModal({ open, onClose }) {
                   id: 'nsz2-kzcq (datos.gov.co)',
                   cobertura: '356 municipios con estaciones activas',
                   variables: 'Municipio, departamento, temperatura media anual (°C)',
-                  color: '#ef4444',
-                  emoji: '🌡️',
+                  color: '#c07040',
+                  Icon: Thermometer,
                   limitacion: '766 municipios sin estación → imputados con media nacional. Sesgo importante en regiones de variabilidad altitudinal alta.',
                 },
               ].map(f => (
@@ -383,7 +387,7 @@ export default function DocumentacionModal({ open, onClose }) {
                   borderRadius: 10, padding: 14,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontSize: 18 }}>{f.emoji}</span>
+                    <f.Icon size={18} strokeWidth={1.5} color={f.color} />
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 700, color: f.color }}>{f.sigla}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{f.nombre}</div>
@@ -407,8 +411,8 @@ export default function DocumentacionModal({ open, onClose }) {
                       <span style={{ color: 'var(--text-secondary)' }}>{f.variables}</span>
                     </div>
                   </div>
-                  <div style={{ marginTop: 10, padding: '7px 10px', background: '#ef444411', borderLeft: '2px solid #ef444466', borderRadius: '0 6px 6px 0', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#ef4444' }}>Limitación: </strong>{f.limitacion}
+                  <div style={{ marginTop: 10, padding: '7px 10px', background: 'var(--bg-surface)', borderLeft: '2px solid var(--border-strong)', borderRadius: '0 6px 6px 0', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    <strong style={{ color: 'var(--text-secondary)' }}>Limitación: </strong>{f.limitacion}
                   </div>
                 </div>
               ))}
@@ -421,9 +425,9 @@ export default function DocumentacionModal({ open, onClose }) {
               {PREGUNTAS.map((item, i) => (
                 <Collapsible
                   key={i}
-                  emoji="❓"
+                  Icon={HelpCircle}
                   title={item.q}
-                  accentColor="#8b5cf6"
+                  accentColor="var(--text-secondary)"
                   defaultOpen={i === 0}
                 >
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
@@ -454,7 +458,7 @@ export default function DocumentacionModal({ open, onClose }) {
                       }}>
                         <div style={{ fontSize: 10, color: 'var(--text-disabled)', marginBottom: 2 }}>Paso {paso.paso}</div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{paso.label}</div>
-                        <div style={{ fontSize: 10, color: '#e879f9', fontFamily: 'var(--font-mono)', margin: '2px 0' }}>{paso.detalle}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', margin: '2px 0' }}>{paso.detalle}</div>
                         <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{paso.desc}</div>
                       </div>
                       {i < FLUJO.length - 1 && (
@@ -472,10 +476,10 @@ export default function DocumentacionModal({ open, onClose }) {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
                   {[
-                    { capa: 'Backend procesamiento', tecnologias: 'Python 3 · pandas · geopandas · requests', color: '#3b82f6' },
-                    { capa: 'Frontend',               tecnologias: 'React · Vite · D3.js · Recharts · Lucide', color: '#10b981' },
-                    { capa: 'Despliegue',              tecnologias: 'Vercel · archivos estáticos (sin backend)', color: '#8b5cf6' },
-                    { capa: 'Datos estáticos',         tecnologias: 'GeoJSON · JSON por municipio (1105 series)', color: '#f59e0b' },
+                    { capa: 'Backend procesamiento', tecnologias: 'Python 3 · pandas · geopandas · requests', color: '#9c9483' },
+                    { capa: 'Frontend',               tecnologias: 'React · Vite · D3.js · Recharts · Lucide', color: '#9cac8b' },
+                    { capa: 'Despliegue',              tecnologias: 'Vercel · archivos estáticos (sin backend)', color: '#808070' },
+                    { capa: 'Datos estáticos',         tecnologias: 'GeoJSON · JSON por municipio (1105 series)', color: '#bd7341' },
                   ].map(t => (
                     <div key={t.capa} style={{
                       background: 'var(--bg-elevated)', border: `1px solid ${t.color}33`,
@@ -503,7 +507,7 @@ export default function DocumentacionModal({ open, onClose }) {
                     { archivo: 'frontend/public/data/municipios.geojson', desc: 'GeoJSON con todos los índices calculados' },
                   ].map(f => (
                     <div key={f.archivo} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                      <code style={{ fontSize: 10, color: '#e879f9', fontFamily: 'var(--font-mono)', minWidth: 0, wordBreak: 'break-all', flex: '0 0 auto', maxWidth: '55%' }}>{f.archivo}</code>
+                      <code style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', minWidth: 0, wordBreak: 'break-all', flex: '0 0 auto', maxWidth: '55%' }}>{f.archivo}</code>
                       <span style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4 }}>{f.desc}</span>
                     </div>
                   ))}
@@ -513,17 +517,17 @@ export default function DocumentacionModal({ open, onClose }) {
               {/* Nota despliegue Vercel */}
               <div style={{
                 padding: '10px 14px',
-                background: '#10b98111',
-                border: '1px solid #10b98133',
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border)',
                 borderRadius: 8,
                 fontSize: 12,
                 color: 'var(--text-secondary)',
                 lineHeight: 1.6,
               }}>
-                <strong style={{ color: '#10b981' }}>Despliegue en Vercel: </strong>
+                <strong style={{ color: 'var(--text-primary)' }}>Despliegue en Vercel: </strong>
                 Seleccionar Framework Preset = <strong style={{ color: 'var(--text-primary)' }}>Other</strong> (no Flask, no Vite, no Next.js).
-                El archivo <code style={{ color: '#e879f9' }}>vercel.json</code> ya define buildCommand, outputDirectory y rewrites.
-                No se necesita ningún backend — todos los datos son archivos JSON estáticos en <code style={{ color: '#e879f9' }}>frontend/public/data/</code>.
+                 El archivo <code style={{ color: 'var(--text-secondary)' }}>vercel.json</code> ya define buildCommand, outputDirectory y rewrites.
+                No se necesita ningún backend — todos los datos son archivos JSON estáticos en <code style={{ color: 'var(--text-secondary)' }}>frontend/public/data/</code>.
               </div>
             </div>
           )}

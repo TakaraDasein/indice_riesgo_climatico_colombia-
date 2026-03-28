@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import {
   Zap, Waves, Mountain, Flame, Sun, Wind, Triangle, Users, Thermometer,
-  ChevronDown, ChevronUp, MapPin, BarChart2,
+  ChevronDown, ChevronUp, MapPin, BarChart2, Globe, Building2, Map,
 } from 'lucide-react'
 import {
   TIPOS_RIESGO, NIVEL_COLORS_BY_RIESGO, SCALE_ARRAYS,
@@ -11,9 +11,9 @@ import {
 const ICON_MAP = { Zap, Waves, Mountain, Flame, Sun, Wind, Triangle, Users, Thermometer }
 
 const MAP_MODES = [
-  { id: 'calor',        emoji: '🌡️', label: 'Calor' },
-  { id: 'municipios',   emoji: '🏘️', label: 'Municipios' },
-  { id: 'departamentos',emoji: '🗺️', label: 'Deptos.' },
+  { id: 'calor',         Icon: Thermometer, label: 'Calor' },
+  { id: 'municipios',    Icon: Building2,   label: 'Municipios' },
+  { id: 'departamentos', Icon: Map,         label: 'Deptos.' },
 ]
 
 export default function Sidebar({
@@ -144,7 +144,7 @@ export default function Sidebar({
       {/* Header */}
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">🌍</div>
+          <div className="sidebar-logo-icon"><Globe size={18} strokeWidth={1.5} /></div>
           <div className="sidebar-logo-text">
             <span className="sidebar-logo-title">Riesgos Climáticos</span>
             <span className="sidebar-logo-sub">Colombia · UNGRD</span>
@@ -220,7 +220,7 @@ export default function Sidebar({
                 className={`map-mode-btn${mapMode === mode.id ? ' active' : ''}`}
                 onClick={() => onMapModeChange(mode.id)}
               >
-                <span className="emoji">{mode.emoji}</span>
+                <mode.Icon size={13} strokeWidth={1.5} />
                 <span>{mode.label}</span>
               </button>
             ))}
@@ -434,7 +434,7 @@ export default function Sidebar({
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--selected-indicator)'; e.currentTarget.style.color = 'var(--selected-indicator)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
               >
-                <span style={{ fontSize: 13 }}>🔺</span>
+                <Triangle size={13} strokeWidth={1.5} />
                 Metodología e Índices
               </button>
             )}

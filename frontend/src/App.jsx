@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { Globe, AlertTriangle, MousePointer } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import MapaD3 from './components/MapaD3'
 import FichaMunicipio from './components/FichaMunicipio'
@@ -103,14 +104,14 @@ export default function App() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
           <div style={{
             width: 60, height: 60,
-            background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-strong)',
             borderRadius: 16,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 28,
-            boxShadow: '0 0 30px rgba(59,130,246,0.4)',
+            boxShadow: '0 0 30px rgba(255,255,255,0.06)',
             animation: 'pulse-glow 2s ease infinite',
           }}>
-            🌍
+            <Globe size={28} color="var(--text-primary)" strokeWidth={1.5} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
             <div className="map-loading-spinner" />
@@ -142,7 +143,7 @@ export default function App() {
             gap: 16,
           }}
         >
-          <span style={{ fontSize: 48 }}>⚠️</span>
+          <AlertTriangle size={48} color="var(--text-secondary)" strokeWidth={1.5} />
           <div>
             <h3 style={{ color: 'var(--text-primary)', marginBottom: 8, fontSize: 18 }}>
               Error al cargar datos
@@ -165,11 +166,11 @@ export default function App() {
             }}
           >
             <p>1. Asegúrate que Flask está corriendo:</p>
-            <p style={{ color: 'var(--accent-cyan)', marginTop: 4 }}>
+            <p style={{ color: 'var(--text-muted)', marginTop: 4 }}>
               $ python app.py
             </p>
             <p style={{ marginTop: 8 }}>2. Verifica que el GeoJSON existe:</p>
-            <p style={{ color: 'var(--accent-cyan)', marginTop: 4 }}>
+            <p style={{ color: 'var(--text-muted)', marginTop: 4 }}>
               data/processed/municipios_riesgo.geojson
             </p>
           </div>
@@ -259,7 +260,7 @@ export default function App() {
           {/* Hint inicial */}
           {!municipioSeleccionado && geojson && (
             <div className="map-empty-hint">
-              <span className="map-empty-hint-icon">👆</span>
+              <span className="map-empty-hint-icon"><MousePointer size={16} strokeWidth={1.5} /></span>
               Haz clic en un municipio para ver su ficha de riesgos
             </div>
           )}

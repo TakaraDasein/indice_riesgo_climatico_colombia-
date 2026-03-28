@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
   Zap, Waves, Mountain, Flame, Sun, Wind, X, Triangle, Users, Thermometer,
+  MapPin, BarChart2, Check,
 } from 'lucide-react'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
@@ -175,7 +176,7 @@ export default function FichaMunicipio({
             </div>
             <div className="ficha-meta">
               <span className="ficha-dept-badge">
-                📍 {municipio.departamento || '—'}
+                <MapPin size={10} strokeWidth={2} style={{ flexShrink: 0 }} /> {municipio.departamento || '—'}
               </span>
               {municipio.cod_municipio && (
                 <span className="ficha-cod-badge">
@@ -202,7 +203,9 @@ export default function FichaMunicipio({
                   transition: 'all 0.15s',
                 }}
               >
-                {isInComparar ? '✓ Comparando' : '+ Comparar'}
+                {isInComparar
+                  ? <><Check size={10} strokeWidth={2.5} /> Comparando</>
+                  : '+ Comparar'}
               </button>
             </div>
           </div>
@@ -320,12 +323,12 @@ export default function FichaMunicipio({
                       />
                       <PolarAngleAxis
                         dataKey="subject"
-                        tick={{ fill: 'var(--text-muted)', fontSize: 9, fontFamily: 'Inter, sans-serif' }}
+                        tick={{ fill: 'var(--text-muted)', fontSize: 9, fontFamily: 'Bricolage Grotesque, system-ui, sans-serif' }}
                         stroke="rgba(255,255,255,0.1)"
-                      />
-                      <PolarRadiusAxis
-                        angle={30}
-                        domain={[0, 5]}
+                       />
+                       <PolarRadiusAxis
+                         angle={30}
+                         domain={[0, 5]}
                         tick={{ fill: 'var(--text-disabled)', fontSize: 8 }}
                         stroke="rgba(255,255,255,0.05)"
                         tickCount={4}
@@ -387,11 +390,11 @@ export default function FichaMunicipio({
                       <PolarGrid stroke="rgba(255,255,255,0.08)" gridType="circle" />
                       <PolarAngleAxis
                         dataKey="subject"
-                        tick={{ fill: 'var(--text-muted)', fontSize: 9, fontFamily: 'Inter, sans-serif' }}
+                        tick={{ fill: 'var(--text-muted)', fontSize: 9, fontFamily: 'Bricolage Grotesque, system-ui, sans-serif' }}
                         stroke="rgba(255,255,255,0.1)"
                       />
-                      <PolarRadiusAxis
-                        angle={30} domain={[0, 5]}
+                       <PolarRadiusAxis
+                         angle={30} domain={[0, 5]}
                         tick={{ fill: 'var(--text-disabled)', fontSize: 8 }}
                         stroke="rgba(255,255,255,0.05)"
                         tickCount={4}
@@ -655,7 +658,7 @@ export default function FichaMunicipio({
 
           {/* Footer */}
           <div className="ficha-footer">
-            <span className="ficha-footer-icon">📊</span>
+            <span className="ficha-footer-icon"><BarChart2 size={12} strokeWidth={1.5} /></span>
             <span className="ficha-footer-text">UNGRD · DANE · IDEAM</span>
             <span className="ficha-footer-dot" />
             <span className="ficha-footer-text">Datos 2018 – 2026</span>

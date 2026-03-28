@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { X, Filter } from 'lucide-react'
+import { X, Filter, MapPin } from 'lucide-react'
 import { TIPOS_RIESGO, NIVEL_COLORS_BY_RIESGO, SELECTED_INDICATOR } from '../utils/riesgoColors'
 
 /**
@@ -127,7 +127,7 @@ export default function FiltrosActivos({
         {/* Chip departamento */}
         {departamentoFiltro && (
           <Chip
-            label={`📍 ${departamentoFiltro}`}
+            label={<><MapPin size={9} strokeWidth={2} style={{ flexShrink: 0 }} /> {departamentoFiltro}</>}
             color="var(--border-strong)"
             onRemove={onRemoveDepartamento}
           />

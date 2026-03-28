@@ -1,6 +1,21 @@
 import { useEffect, useRef, useCallback } from 'react'
 import * as d3 from 'd3'
+import {
+  Zap, Waves, Mountain, Flame, Sun, Wind, Triangle, Users, Thermometer, Home,
+} from 'lucide-react'
 import { NIVEL_COLORS_BY_RIESGO, TIPOS_RIESGO, SIN_DATOS_COLOR, SCALE_ARRAYS } from '../utils/riesgoColors'
+
+const RIESGO_ICONS = {
+  riesgo_compuesto: Zap,
+  triangulado:      Triangle,
+  ipm:              Users,
+  temperatura:      Thermometer,
+  inundacion:       Waves,
+  deslizamiento:    Mountain,
+  incendio:         Flame,
+  sequia:           Sun,
+  evento_extremo:   Wind,
+}
 
 const MODE_LABELS = {
   municipios: 'Municipios',
@@ -195,7 +210,7 @@ export default function MapaD3({
               .style('fill', 'rgba(255,255,255,0.6)')
               .style('font-size', '8px')
               .style('font-weight', '600')
-              .style('font-family', 'Inter, system-ui, sans-serif')
+              .style('font-family', 'Bricolage Grotesque, system-ui, sans-serif')
               .style('pointer-events', 'none')
               .style('letter-spacing', '0.3px')
               .style('text-shadow', '0 1px 3px rgba(0,0,0,0.8)')
@@ -359,16 +374,7 @@ export default function MapaD3({
           className="map-info-risk-icon"
           style={{ background: `${SCALE_ARRAYS[riesgoActivo]?.[2] ?? '#4a4a4a'}22` }}
         >
-          <span style={{ fontSize: 14 }}>
-            {riesgoActivo === 'riesgo_compuesto' ? '⚡' :
-             riesgoActivo === 'triangulado' ? '🔺' :
-             riesgoActivo === 'ipm' ? '👥' :
-             riesgoActivo === 'temperatura' ? '🌡️' :
-             riesgoActivo === 'inundacion' ? '🌊' :
-             riesgoActivo === 'deslizamiento' ? '⛰️' :
-             riesgoActivo === 'incendio' ? '🔥' :
-             riesgoActivo === 'sequia' ? '☀️' : '💨'}
-          </span>
+          {(() => { const Icon = RIESGO_ICONS[riesgoActivo] ?? Zap; return <Icon size={14} strokeWidth={1.5} color={SCALE_ARRAYS[riesgoActivo]?.[3] ?? 'var(--text-muted)'} /> })()}
         </div>
         <div>
           <div className="map-info-risk-name" style={{ color: SCALE_ARRAYS[riesgoActivo]?.[3] ?? '#a0a0a0' }}>
@@ -383,7 +389,7 @@ export default function MapaD3({
         <button className="map-control-btn" onClick={handleZoomIn} title="Acercar">+</button>
         <button className="map-control-btn" onClick={handleZoomOut} title="Alejar">−</button>
         <div className="map-control-divider" />
-        <button className="map-control-btn" onClick={handleReset} title="Resetear vista" style={{ fontSize: 12 }}>⌂</button>
+        <button className="map-control-btn" onClick={handleReset} title="Resetear vista"><Home size={13} strokeWidth={1.5} /></button>
       </div>
 
       {/* Leyenda */}
